@@ -2200,6 +2200,24 @@ paths:
                 $ref: '#/components/schemas/BaseResponse'
       security:
         - api_key: []
+  /media/generate:
+      post:
+        summary: Generate multimedia content
+        description: Generate image, video or audio based on the given prompt
+        operationId: generateMedia
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGenerateRequest'
+        responses:
+          '200':
+            description: Successful generation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/MediaGenerateResponse'
   /pilot/session/new:
     post:
       tags:
@@ -3613,6 +3631,7 @@ components:
         - skillResponse
         - codeArtifact
         - page
+        - mediaResult
     Entity:
       type: object
       description: Entity
@@ -4485,6 +4504,14 @@ components:
           description: Errors
           items:
             type: string
+        outputUrl:
+          type: string
+          format: uri
+          description: Media generation output URL (for media type actions)
+          example: https://example.com/generated/image_123.png
+        storageKey:
+          type: string
+          description: Media generation output storage key
         pilotStepId:
           type: string
           description: Pilot step ID
@@ -6230,6 +6257,7 @@ components:
       enum:
         - skill
         - tool
+        - media
     ActionContextType:
       type: string
       enum:
@@ -6418,6 +6446,38 @@ components:
         triggerId:
           type: string
           description: Trigger ID to delete
+    MediaType:
+      type: string
+      description: media type
+      enum: [image, video, audio]
+      example: image
+    MediaGenerateRequest:
+        type: object
+        required:
+          - mediaType
+          - prompt
+        properties:
+          mediaType:
+            $ref: '#/components/schemas/MediaType'
+          model:
+            type: string
+            description: Model name for content generation
+          provider:
+            type: string
+            description: Optional provider selection
+            nullable: true
+          prompt:
+            type: string
+            description: Text prompt for content generation
+    MediaGenerateResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            resultId:
+              type: string
+              description: Media generation result ID
+              example: ar-g30e1b80b5g1itbemc0g5jj3
     PilotStepStatus:
       type: string
       enum:
@@ -7048,6 +7108,18 @@ components:
                 content:
                   type: string
                   description: Converted markdown content
+    MediaGenerationModelCapabilities:
+      type: object
+      properties:
+        image:
+          type: boolean
+          description: Whether this model supports image generation
+        video:
+          type: boolean
+          description: Whether this model supports video generation
+        audio:
+          type: boolean
+          description: Whether this model supports audio generation
     ModelCapabilities:
       type: object
       properties:
@@ -7122,6 +7194,7 @@ components:
         - webSearch
         - urlParsing
         - pdfParsing
+        - mediaGeneration
     Provider:
       type: object
       description: General provider info
@@ -7180,6 +7253,23 @@ components:
         capabilities:
           description: Model capabilities
           $ref: '#/components/schemas/ModelCapabilities'
+
+    MediaGenerationModelConfig:
+      type: object
+      description: Provider config for media generation
+      required:
+        - modelId
+        - modelName
+      properties:
+        modelId:
+          type: string
+          description: Model ID
+        modelName:
+          type: string
+          description: Model name
+        capabilities:
+          description: Model capabilities
+          $ref: '#/components/schemas/MediaGenerationModelCapabilities'
     EmbeddingModelConfig:
       type: object
       description: Provider config for embeddings
@@ -7222,6 +7312,7 @@ components:
         - $ref: '#/components/schemas/LLMModelConfig'
         - $ref: '#/components/schemas/EmbeddingModelConfig'
         - $ref: '#/components/schemas/RerankerModelConfig'
+        - $ref: '#/components/schemas/MediaGenerationModelConfig'
     ProviderItemOption:
       type: object
       properties:
@@ -7501,6 +7592,10 @@ components:
         - memo
         - group
         - image
+        - video
+        - audio
+        - mediaSkill
+        - mediaSkillResponse
     CanvasNodeData:
       type: object
       required:

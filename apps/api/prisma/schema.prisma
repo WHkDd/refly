@@ -148,6 +148,10 @@ model ActionResult {
   pilotStepId    String?      @map("pilot_step_id")
   /// Pilot session id
   pilotSessionId String?      @map("pilot_session_id")
+  /// Media generation output URL
+  outputUrl      String?      @map("output_url")
+  /// Media result storage key
+  storageKey     String?      @map("storage_key")
   /// Create timestamp
   createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz()
   /// Update timestamp

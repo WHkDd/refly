@@ -224,6 +224,39 @@ export const ImageNode = memo(
             'nodrag nopan select-text': isOperating,
           })}
         >
+          <div className="absolute w-full -top-8 left-0 right-0 z-10 flex items-center h-8 gap-2">
+            {showTitle && (
+              <div
+                className={cn(
+                  'flex-1 min-w-0 rounded-t-lg px-1 py-1 transition-opacity duration-200 bg-transparent',
+                  {
+                    'opacity-100': selected || isHovered,
+                    'opacity-0': !selected && !isHovered,
+                  },
+                )}
+              >
+                <NodeHeader
+                  title={data.title}
+                  Icon={IconImage}
+                  iconBgColor="#02b0c7"
+                  canEdit={!readonly}
+                  updateTitle={onTitleChange}
+                />
+              </div>
+            )}
+
+            {!isPreview && !readonly && (
+              <div className="flex-shrink-0">
+                <NodeActionButtons
+                  nodeId={id}
+                  nodeType="image"
+                  isNodeHovered={isHovered}
+                  isSelected={selected}
+                />
+              </div>
+            )}
+          </div>
+
           <div
             className={`
                 w-full
@@ -255,39 +288,7 @@ export const ImageNode = memo(
             )}
 
             <div className={cn('flex flex-col h-full relative box-border', MAX_HEIGHT_CLASS)}>
-              {!isPreview && !readonly && (
-                <NodeActionButtons
-                  nodeId={id}
-                  nodeType="image"
-                  isNodeHovered={isHovered}
-                  isSelected={selected}
-                />
-              )}
-
               <div className="relative w-full h-full rounded-lg overflow-hidden">
-                {showTitle && (
-                  <div
-                    className={cn(
-                      'absolute top-0 left-0 right-0 z-10 rounded-t-lg px-1 transition-opacity duration-200',
-                      {
-                        'opacity-100': selected || isHovered,
-                        'opacity-0': !selected && !isHovered,
-                      },
-                    )}
-                    style={{
-                      textShadow: '0px 0px 3px #ffffff',
-                      backgroundColor: 'transparent',
-                    }}
-                  >
-                    <NodeHeader
-                      title={data.title}
-                      Icon={IconImage}
-                      iconBgColor="#02b0c7"
-                      canEdit={!readonly}
-                      updateTitle={onTitleChange}
-                    />
-                  </div>
-                )}
                 <img
                   onClick={handleImageClick}
                   src={imageUrl}

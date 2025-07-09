@@ -48,6 +48,7 @@ interface SettingModalProps {
 
 // MCP Server Tab Component
 const McpServerTab = ({ visible }: { visible: boolean }) => {
+  const { t } = useTranslation();
   const [mcpActiveTab, setMcpActiveTab] = useState('my-servers');
   const isLogin = useUserStoreShallow((state) => state.isLogin);
   const { settingsModalActiveTab } = useSiderStoreShallow((state) => ({
@@ -73,12 +74,12 @@ const McpServerTab = ({ visible }: { visible: boolean }) => {
   const tabItems = [
     {
       key: 'my-servers',
-      label: 'My Servers',
+      label: t('settings.mcpServer.myServers'),
       icon: <UnorderedListOutlined />,
     },
     {
       key: 'community',
-      label: 'MCP Store',
+      label: t('settings.mcpServer.mcpStore'),
       icon: <AppstoreOutlined />,
     },
   ];
@@ -97,15 +98,15 @@ const McpServerTab = ({ visible }: { visible: boolean }) => {
               cursor-pointer relative px-4 py-2.5 flex items-center gap-1.5 text-sm font-medium transition-all duration-200 ease-in-out
               ${
                 mcpActiveTab === tab.key
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-green-600 dark:text-green-400'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }
             `}
           >
-            <span className="text-sm">{tab.icon}</span>
-            <span>{tab.label}</span>
+            <div className="text-sm flex items-center">{tab.icon}</div>
+            <div>{tab.label}</div>
             {mcpActiveTab === tab.key && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-sm" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-400 rounded-t-sm" />
             )}
           </div>
         ))}
@@ -136,12 +137,12 @@ const Settings: React.FC<SettingModalProps> = ({ visible, setVisible }) => {
   }));
 
   const [localActiveTab, setLocalActiveTab] = useState<SettingsModalActiveTab>(
-    settingsModalActiveTab || SettingsModalActiveTab.Appearance,
+    settingsModalActiveTab || SettingsModalActiveTab.ModelProviders,
   );
 
   // Update local active tab when prop changes
   useEffect(() => {
-    setLocalActiveTab(settingsModalActiveTab || SettingsModalActiveTab.Appearance);
+    setLocalActiveTab(settingsModalActiveTab || SettingsModalActiveTab.ModelProviders);
   }, [settingsModalActiveTab]);
 
   // Handle tab change

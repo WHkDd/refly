@@ -1,26 +1,36 @@
 import { useCallback, useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { nodeOperationsEmitter } from '@refly-packages/ai-workspace-common/events/nodeOperations';
+import {
+  nodeOperationsEmitter,
+  MediaType,
+} from '@refly-packages/ai-workspace-common/events/nodeOperations';
 import { useCanvasContext } from '@refly-packages/ai-workspace-common/context/canvas';
 import { useAddNode } from './use-add-node';
-import { CanvasNode } from '@refly/canvas-common';
+import { CanvasNode, CanvasNodeFilter } from '@refly/canvas-common';
 import { CodeArtifactNodeMeta } from '@refly/canvas-common';
 import { useNodePreviewControl } from '@refly-packages/ai-workspace-common/hooks/canvas/use-node-preview-control';
 import { CanvasNodeType } from '@refly-packages/ai-workspace-common/requests';
 import { useReactFlow } from '@xyflow/react';
 import { locateToNodePreviewEmitter } from '@refly-packages/ai-workspace-common/events/locateToNodePreview';
+import { genMediaSkillResponseID } from '@refly/utils/id';
+import { useChatStoreShallow } from '@refly-packages/ai-workspace-common/stores/chat';
 
 import getClient from '@refly-packages/ai-workspace-common/requests/proxiedRequest';
 
 export const useListenNodeOperationEvents = () => {
   const { readonly, canvasId } = useCanvasContext();
   const { addNode } = useAddNode();
-  const { getNodes, getEdges } = useReactFlow();
+  const { getNodes, getEdges, getNode } = useReactFlow();
   const { t } = useTranslation();
 
   // Only use canvas store if in interactive mode and not readonly
   const { previewNode, closeNodePreviewByEntityId } = useNodePreviewControl({ canvasId });
+
+  // Get mediaSelectedModel from store for new mediaSkill nodes
+  const { mediaSelectedModel } = useChatStoreShallow((state) => ({
+    mediaSelectedModel: state.mediaSelectedModel,
+  }));
 
   const queryCodeArtifactByResultId = useCallback(
     async (params: { resultId: string; resultVersion: number }) => {
@@ -137,6 +147,96 @@ export const useListenNodeOperationEvents = () => {
     [getNodes, getEdges, previewNode, canvasId, addNode, t],
   );
 
+  const handleGenerateMedia = useCallback(
+    async ({
+      mediaType,
+      query,
+      model,
+      nodeId,
+    }: { mediaType: MediaType; query: string; model: string; nodeId: string }) => {
+      if (readonly) return;
+
+      try {
+        // If nodeId is empty, create a mediaSkill node first
+        let targetNodeId = nodeId;
+        if (!targetNodeId) {
+          const { genMediaSkillID } = await import('@refly/utils/id');
+          const mediaSkillEntityId = genMediaSkillID();
+
+          const mediaSkillNode = {
+            type: 'mediaSkill' as const,
+            data: {
+              title: query,
+              entityId: mediaSkillEntityId,
+              metadata: {
+                query,
+                selectedModel: mediaSelectedModel, // Use store's mediaSelectedModel as default
+              },
+            },
+          };
+
+          // Add the mediaSkill node to canvas
+          addNode(mediaSkillNode, [], false, true);
+
+          // Get the created node ID
+          const nodes = getNodes();
+          const createdNode = nodes?.find((node) => node.data?.entityId === mediaSkillEntityId);
+          if (createdNode) {
+            targetNodeId = createdNode.id;
+          }
+        }
+
+        const { data } = await getClient().generateMedia({
+          body: {
+            prompt: query,
+            mediaType,
+            provider: 'replicate',
+            model,
+          },
+        });
+
+        if (data?.success && data?.resultId) {
+          // Create MediaSkillResponse node
+          const resultId = data.resultId;
+          const entityId = genMediaSkillResponseID();
+
+          const newNode = {
+            type: 'mediaSkillResponse' as const,
+            data: {
+              title: query,
+              entityId,
+              metadata: {
+                status: 'waiting' as const,
+                mediaType,
+                prompt: query,
+                model,
+                resultId,
+              },
+            },
+          };
+
+          const currentNode = getNode(targetNodeId);
+          const connectedTo: CanvasNodeFilter[] = currentNode
+            ? [
+                {
+                  type: 'mediaSkill',
+                  entityId: currentNode.data?.entityId as string,
+                  handleType: 'source',
+                },
+              ]
+            : [];
+
+          addNode(newNode, connectedTo, false, true);
+        } else {
+          console.error('Failed to generate media', data);
+        }
+      } catch (error) {
+        console.error('Failed to generate media', error);
+      }
+    },
+    [readonly, getNode, addNode, getNodes, mediaSelectedModel],
+  );
+
   useEffect(() => {
     const handleAddNode = ({ node, connectTo, shouldPreview, needSetCenter, positionCallback }) => {
       if (readonly) return;
@@ -163,11 +263,20 @@ export const useListenNodeOperationEvents = () => {
     nodeOperationsEmitter.on('addNode', handleAddNode);
     nodeOperationsEmitter.on('jumpToDescendantNode', handleJumpToNode);
     nodeOperationsEmitter.on('closeNodePreviewByEntityId', handleCloseNodePreviewByEntityId);
+    nodeOperationsEmitter.on('generateMedia', handleGenerateMedia);
 
     return () => {
       nodeOperationsEmitter.off('addNode', handleAddNode);
       nodeOperationsEmitter.off('jumpToDescendantNode', handleJumpToNode);
       nodeOperationsEmitter.off('closeNodePreviewByEntityId', handleCloseNodePreviewByEntityId);
+      nodeOperationsEmitter.off('generateMedia', handleGenerateMedia);
     };
-  }, [addNode, readonly, previewNode, closeNodePreviewByEntityId, jumpToDescendantNode]);
+  }, [
+    addNode,
+    readonly,
+    previewNode,
+    closeNodePreviewByEntityId,
+    jumpToDescendantNode,
+    handleGenerateMedia,
+  ]);
 };

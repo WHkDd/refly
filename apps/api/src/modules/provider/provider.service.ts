@@ -158,6 +158,33 @@ export class ProviderService implements OnModuleInit {
     return { providers: decryptedProviders, items: decryptedItems };
   }
 
+  async findProvider(user: User, param: ListProvidersData['query']) {
+    const { enabled, providerKey, category } = param;
+    const provider = await this.prisma.provider.findFirst({
+      where: {
+        uid: user.uid,
+        enabled,
+        providerKey,
+        deletedAt: null,
+        ...(category ? { categories: { contains: category } } : {}),
+      },
+    });
+
+    if (!provider) {
+      return null;
+    }
+
+    // Encrypt API key before storing
+    const decryptedApiKey = provider.apiKey
+      ? this.encryptionService.decrypt(provider.apiKey)
+      : null;
+
+    return {
+      ...provider,
+      apiKey: decryptedApiKey,
+    };
+  }
+
   async listProviders(user: User, param: ListProvidersData['query']) {
     const { enabled, providerKey, category } = param;
     const providers = await this.prisma.provider.findMany({
@@ -731,7 +758,11 @@ export class ProviderService implements OnModuleInit {
 
     if (providerId) {
       const provider = await this.prisma.provider.findUnique({
-        where: { providerId, OR: [{ uid: user.uid }, { isGlobal: true }], deletedAt: null },
+        where: {
+          providerId,
+          OR: [{ uid: user.uid }, { isGlobal: true }],
+          deletedAt: null,
+        },
       });
       if (provider?.enabled) {
         // Decrypt API key and return
@@ -992,7 +1023,11 @@ export class ProviderService implements OnModuleInit {
     }
 
     const provider = await this.prisma.provider.findUnique({
-      where: { providerId, deletedAt: null, OR: [{ uid: user.uid }, { isGlobal: true }] },
+      where: {
+        providerId,
+        OR: [{ uid: user.uid }, { isGlobal: true }],
+        deletedAt: null,
+      },
     });
 
     if (!provider) {

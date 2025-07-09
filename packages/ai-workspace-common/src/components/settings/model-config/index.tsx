@@ -9,7 +9,6 @@ import {
   Tooltip,
   Dropdown,
   Popconfirm,
-  Typography,
   message,
   MenuProps,
   Divider,
@@ -18,7 +17,7 @@ import {
   Collapse,
 } from 'antd';
 import { Spin } from '@refly-packages/ai-workspace-common/components/common/spin';
-import { LuPlus, LuSearch } from 'react-icons/lu';
+import { LuPlus, LuSearch, LuMessageCircle, LuImage, LuSettings } from 'react-icons/lu';
 import { cn } from '@refly-packages/ai-workspace-common/utils/cn';
 import {
   IconDelete,
@@ -31,8 +30,7 @@ import { modelEmitter } from '@refly-packages/ai-workspace-common/utils/event-em
 import { useGroupModels } from '@refly-packages/ai-workspace-common/hooks/use-group-models';
 import { ModelFormModal } from './model-form';
 import { useUserStoreShallow } from '@refly-packages/ai-workspace-common/stores/user';
-
-const { Title } = Typography;
+import { useChatStoreShallow } from '@refly-packages/ai-workspace-common/stores/chat';
 
 const MODEL_TIER_TO_COLOR = {
   free: 'green',
@@ -195,6 +193,7 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
   const [modelItems, setModelItems] = useState<ProviderItem[]>([]);
   const [embedding, setEmbedding] = useState<ProviderItem | null>(null);
   const [reranker, setReranker] = useState<ProviderItem | null>(null);
+  const [mediaGenerationModels, setMediaGenerationModels] = useState<ProviderItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -203,11 +202,21 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
   const [editingModel, setEditingModel] = useState<ProviderItem | null>(null);
   const [activeCollapseKeys, setActiveCollapseKeys] = useState<string[]>([]);
   const [userHasInteracted, setUserHasInteracted] = useState(false);
+  const [activeTab, setActiveTab] = useState('conversation');
 
   const { userProfile, setUserProfile } = useUserStoreShallow((state) => ({
     userProfile: state.userProfile,
     setUserProfile: state.setUserProfile,
   }));
+
+  const { setMediaModelList } = useChatStoreShallow((state) => ({
+    setMediaModelList: state.setMediaModelList,
+  }));
+
+  useEffect(() => {
+    setMediaModelList(mediaGenerationModels.filter((item) => item.enabled));
+  }, [mediaGenerationModels, setMediaModelList]);
+
   const defaultPreferences = userProfile?.preferences || {};
   const defaultModel = defaultPreferences.defaultModel || {};
   const chatModel = defaultModel.chat;
@@ -269,38 +278,39 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
       setModelItems(list.filter((item) => item.category === 'llm'));
       setEmbedding(list.filter((item) => item.category === 'embedding')?.[0]);
       setReranker(list.filter((item) => item.category === 'reranker')?.[0]);
+      setMediaGenerationModels(list.filter((item) => item.category === 'mediaGeneration'));
     }
   }, []);
 
-  const updateModelMutation = useCallback(
-    async (enabled: boolean, model: ProviderItem) => {
-      setIsUpdating(true);
-      const res = await getClient().updateProviderItem({
-        body: {
-          ...model,
-          enabled,
-        },
-        query: {
-          providerId: model.providerId,
-        },
-      });
-      setIsUpdating(false);
-      if (res.data.success) {
-        const updatedModel = {
-          ...model,
-          enabled,
-        };
-        setModelItems(
-          modelItems.map((item) => (item.itemId === updatedModel.itemId ? updatedModel : item)),
+  const updateModelMutation = async (enabled: boolean, model: ProviderItem) => {
+    setIsUpdating(true);
+    const res = await getClient().updateProviderItem({
+      body: {
+        itemId: model.itemId,
+        enabled,
+      },
+    });
+    if (res.data.success) {
+      const updatedModel = { ...model, enabled };
+      if (model.category === 'llm') {
+        setModelItems((prev) =>
+          prev.map((item) => (item.itemId === model.itemId ? updatedModel : item)),
         );
-        message.success(t('common.saveSuccess'));
-
-        // Emit event to refresh model list in other components
-        modelEmitter.emit('model:list:refetch', null);
+      } else if (model.category === 'embedding') {
+        setEmbedding(updatedModel);
+      } else if (model.category === 'reranker') {
+        setReranker(updatedModel);
+      } else if (model.category === 'mediaGeneration') {
+        setMediaGenerationModels((prev) =>
+          prev.map((item) => (item.itemId === model.itemId ? updatedModel : item)),
+        );
       }
-    },
-    [modelItems, t],
-  );
+
+      // Emit event to refresh model list in other components
+      modelEmitter.emit('model:list:refetch', null);
+    }
+    setIsUpdating(false);
+  };
 
   const beforeDeleteProviderItem = async (model: ProviderItem) => {
     const type = getDefaultModelTypes(model.itemId);
@@ -309,7 +319,7 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
         title: t('settings.modelConfig.deleteSyncConfirm', {
           name: model.name || t('common.untitled'),
         }),
-        onOk: () => deleteProviderItem(model.itemId),
+        onOk: () => deleteProviderItem(model.itemId, model.category),
         okText: t('common.confirm'),
         cancelText: t('common.cancel'),
         okButtonProps: {
@@ -320,41 +330,39 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
         },
       });
     } else {
-      deleteProviderItem(model.itemId);
+      deleteProviderItem(model.itemId, model.category);
     }
   };
 
   const disableDefaultModelConfirm = async (modelName: string, handleOk: () => void) => {
     Modal.confirm({
-      title: t('settings.modelConfig.disableSyncConfirm', {
-        name: modelName || t('common.untitled'),
-      }),
-      onOk: () => handleOk(),
+      title: t('settings.modelConfig.disableDefaultModelTitle'),
+      content: t('settings.modelConfig.disableDefaultModelContent', { modelName }),
       okText: t('common.confirm'),
       cancelText: t('common.cancel'),
-      okButtonProps: {
-        danger: true,
-      },
-      cancelButtonProps: {
-        className: 'hover:!text-green-600 hover:!border-green-600',
-      },
+      onOk: handleOk,
     });
   };
 
-  const deleteProviderItem = async (itemId: string) => {
+  const deleteProviderItem = async (itemId: string, category: ProviderCategory) => {
     const res = await getClient().deleteProviderItem({
       body: { itemId },
     });
     if (res.data.success) {
       message.success(t('common.deleteSuccess'));
-      setModelItems(modelItems.filter((item) => item.itemId !== itemId));
-      const types = getDefaultModelTypes(itemId);
-      if (types.length) {
-        updateDefaultModel(types, null);
-      }
 
-      // Emit event to refresh model list in other components
-      modelEmitter.emit('model:list:refetch', null);
+      if (category === 'mediaGeneration') {
+        setMediaGenerationModels(mediaGenerationModels.filter((item) => item.itemId !== itemId));
+      } else {
+        setModelItems(modelItems.filter((item) => item.itemId !== itemId));
+        const types = getDefaultModelTypes(itemId);
+        if (types.length) {
+          updateDefaultModel(types, null);
+        }
+
+        // Emit event to refresh model list in other components
+        modelEmitter.emit('model:list:refetch', null);
+      }
     }
   };
 
@@ -407,42 +415,30 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
     type?: 'create' | 'update',
     model?: ProviderItem,
   ) => {
-    if (categoryType === 'llm') {
-      let updatedItems = [...modelItems];
-      if (type === 'create') {
-        updatedItems = [...modelItems, model];
-        setModelItems(updatedItems);
-      } else if (type === 'update') {
-        updatedItems = [
-          ...modelItems.map((item) => (item.itemId === model.itemId ? { ...model } : item)),
-        ];
-        setModelItems(updatedItems);
-
-        const types = getDefaultModelTypes(model.itemId);
-        if (types.length) {
-          updateDefaultModel(types, model?.enabled ? model : null);
-        }
+    if (type === 'create') {
+      if (categoryType === 'llm') {
+        setModelItems((prev) => [...prev, model!]);
+      } else if (categoryType === 'embedding') {
+        setEmbedding(model!);
+      } else if (categoryType === 'reranker') {
+        setReranker(model!);
+      } else if (categoryType === 'mediaGeneration') {
+        setMediaGenerationModels((prev) => [...prev, model!]);
       }
-
-      if (model) {
-        setTimeout(() => {
-          const groups = handleGroupModelList(updatedItems);
-          const groupWithModel = groups.find((group) =>
-            group.models.some((m) => m.itemId === model.itemId),
-          );
-
-          if (groupWithModel) {
-            // Open the group containing the model
-            setActiveCollapseKeys((prev) =>
-              prev.includes(groupWithModel.key) ? prev : [...prev, groupWithModel.key],
-            );
-          }
-        }, 0);
+    } else if (type === 'update') {
+      if (categoryType === 'llm') {
+        setModelItems((prev) =>
+          prev.map((item) => (item.itemId === model!.itemId ? model! : item)),
+        );
+      } else if (categoryType === 'embedding') {
+        setEmbedding(model!);
+      } else if (categoryType === 'reranker') {
+        setReranker(model!);
+      } else if (categoryType === 'mediaGeneration') {
+        setMediaGenerationModels((prev) =>
+          prev.map((item) => (item.itemId === model!.itemId ? model! : item)),
+        );
       }
-    } else if (categoryType === 'embedding') {
-      setEmbedding(model);
-    } else if (categoryType === 'reranker') {
-      setReranker(model);
     }
     setIsModalOpen(false);
     setEditingModel(null);
@@ -490,7 +486,7 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
     if (visible) {
       getProviderItems();
     }
-  }, [visible]);
+  }, [visible, getProviderItems]);
 
   // Handle collapse panel change
   const handleCollapseChange = (keys: string | string[]) => {
@@ -498,12 +494,27 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
     setActiveCollapseKeys(typeof keys === 'string' ? [keys] : keys);
   };
 
-  return (
-    <div className="p-4 pt-0 h-full overflow-hidden flex flex-col">
-      <Title level={4} className="pb-4">
-        {t('settings.modelConfig.chatModels')}
-      </Title>
+  // Tab items for model categories
+  const tabItems = [
+    {
+      key: 'conversation',
+      label: t('settings.modelConfig.conversationModels'),
+      icon: <LuMessageCircle className="h-4 w-4 flex items-center" />,
+    },
+    {
+      key: 'media',
+      label: t('settings.modelConfig.mediaGeneration'),
+      icon: <LuImage className="h-4 w-4 flex items-center" />,
+    },
+    {
+      key: 'other',
+      label: t('settings.modelConfig.otherModels'),
+      icon: <LuSettings className="h-4 w-4 flex items-center" />,
+    },
+  ];
 
+  const renderConversationModels = () => (
+    <>
       {/* Search and Add Bar */}
       <div className="flex items-center justify-between mb-6">
         <div className="relative flex-1 max-w-xs">
@@ -592,13 +603,63 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
           </div>
         )}
       </div>
+    </>
+  );
 
-      <Divider />
+  const renderMediaGenerationModels = () => (
+    <>
+      <div className="flex items-center justify-between mb-4">
+        <Input
+          placeholder={t('settings.modelConfig.searchPlaceholder')}
+          prefix={<LuSearch className="h-4 w-4 text-gray-400" />}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm"
+        />
+        <Button
+          type="primary"
+          icon={<LuPlus className="h-4 w-4" />}
+          onClick={() => handleAddModel('mediaGeneration')}
+        >
+          {t('settings.modelConfig.addModel')}
+        </Button>
+      </div>
 
-      <Title level={4} className="pb-4">
-        {t('settings.modelConfig.otherModels')}
-      </Title>
+      <div className="flex-1 overflow-auto">
+        <Spin spinning={isLoading}>
+          {mediaGenerationModels.length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t('settings.modelConfig.noMediaModels')}
+            >
+              <Button
+                onClick={() => handleAddModel('mediaGeneration')}
+                icon={<LuPlus className="flex items-center" />}
+              >
+                {t('settings.modelConfig.addFirstModel')}
+              </Button>
+            </Empty>
+          ) : (
+            <div className="space-y-2">
+              {mediaGenerationModels.map((model) => (
+                <ModelItem
+                  key={model.itemId}
+                  model={model}
+                  onEdit={handleEditModel}
+                  onDelete={handleDeleteModel}
+                  onToggleEnabled={handleToggleEnabled}
+                  isSubmitting={isUpdating}
+                />
+              ))}
+            </div>
+          )}
+        </Spin>
+      </div>
+    </>
+  );
 
+  const renderOtherModels = () => (
+    <>
       <div className="flex flex-col gap-4 pb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -646,6 +707,50 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'conversation':
+        return renderConversationModels();
+      case 'media':
+        return renderMediaGenerationModels();
+      case 'other':
+        return renderOtherModels();
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="p-4 pt-0 h-full overflow-hidden flex flex-col">
+      {/* Custom Tab Header */}
+      <div className="flex border-b border-gray-100 dark:border-gray-800 mb-4">
+        {tabItems.map((tab) => (
+          <div
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`
+              cursor-pointer relative px-4 py-2.5 flex items-center justify-center gap-1.5 text-sm font-medium transition-all duration-200 ease-in-out 
+              ${
+                activeTab === tab.key
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }
+            `}
+          >
+            <div className="text-sm">{tab.icon}</div>
+            <div>{tab.label}</div>
+            {activeTab === tab.key && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-400 rounded-t-sm" />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="flex-1 overflow-auto">{renderTabContent()}</div>
 
       {/* Modal for Create and Edit */}
       <ModelFormModal
@@ -665,3 +770,5 @@ export const ModelConfig = ({ visible }: { visible: boolean }) => {
     </div>
   );
 };
+
+ModelItem.displayName = 'ModelItem';

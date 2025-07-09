@@ -73,6 +73,13 @@ export default defineConfig(({ mode }) => {
         strict: false,
         allow: [searchForWorkspaceRoot(process.cwd())],
       },
+      proxy: {
+        '/v1': {
+          target: 'http://localhost:5800',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
   } as UserConfig;
 });

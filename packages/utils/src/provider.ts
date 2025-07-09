@@ -87,4 +87,28 @@ export const providerInfoList: ProviderInfo[] = [
       },
     },
   },
+  {
+    key: 'replicate',
+    name: 'Replicate',
+    categories: ['llm', 'embedding', 'mediaGeneration'],
+    fieldConfig: {
+      apiKey: { presence: 'required' },
+      baseUrl: {
+        presence: 'optional',
+        defaultValue: 'https://api.replicate.com/v1',
+      },
+    },
+  },
+  {
+    key: 'fal',
+    name: 'FAL',
+    categories: ['mediaGeneration'],
+    fieldConfig: {
+      apiKey: { presence: 'required' },
+      baseUrl: {
+        presence: 'optional',
+        defaultValue: 'https://fal.run/fal-ai',
+      },
+    },
+  },
 ];

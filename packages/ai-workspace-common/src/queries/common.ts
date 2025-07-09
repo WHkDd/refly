@@ -42,7 +42,6 @@ import {
   deleteProject,
   deleteProjectItems,
   deleteProvider,
-  testProviderConnection,
   deleteProviderItem,
   deleteReferences,
   deleteResource,
@@ -55,6 +54,7 @@ import {
   emailSignup,
   exportCanvas,
   exportDocument,
+  generateMedia,
   getActionResult,
   getAuthConfig,
   getCanvasData,
@@ -76,6 +76,7 @@ import {
   listCanvases,
   listCanvasTemplateCategories,
   listCanvasTemplates,
+  listCodeArtifacts,
   listDocuments,
   listLabelClasses,
   listLabelInstances,
@@ -104,6 +105,7 @@ import {
   serveStatic,
   sharePage,
   streamInvokeSkill,
+  testProviderConnection,
   unpinSkillInstance,
   updateCanvas,
   updateCanvasTemplate,
@@ -325,6 +327,18 @@ export const UseGetProjectDetailKeyFn = (
   clientOptions: Options<unknown, true>,
   queryKey?: Array<unknown>,
 ) => [useGetProjectDetailKey, ...(queryKey ?? [clientOptions])];
+export type ListCodeArtifactsDefaultResponse = Awaited<
+  ReturnType<typeof listCodeArtifacts>
+>['data'];
+export type ListCodeArtifactsQueryResult<
+  TData = ListCodeArtifactsDefaultResponse,
+  TError = unknown,
+> = UseQueryResult<TData, TError>;
+export const useListCodeArtifactsKey = 'ListCodeArtifacts';
+export const UseListCodeArtifactsKeyFn = (
+  clientOptions: Options<unknown, true> = {},
+  queryKey?: Array<unknown>,
+) => [useListCodeArtifactsKey, ...(queryKey ?? [clientOptions])];
 export type GetCodeArtifactDetailDefaultResponse = Awaited<
   ReturnType<typeof getCodeArtifactDetail>
 >['data'];
@@ -907,6 +921,12 @@ export type DeleteSkillTriggerMutationResult = Awaited<ReturnType<typeof deleteS
 export const useDeleteSkillTriggerKey = 'DeleteSkillTrigger';
 export const UseDeleteSkillTriggerKeyFn = (mutationKey?: Array<unknown>) => [
   useDeleteSkillTriggerKey,
+  ...(mutationKey ?? []),
+];
+export type GenerateMediaMutationResult = Awaited<ReturnType<typeof generateMedia>>;
+export const useGenerateMediaKey = 'GenerateMedia';
+export const UseGenerateMediaKeyFn = (mutationKey?: Array<unknown>) => [
+  useGenerateMediaKey,
   ...(mutationKey ?? []),
 ];
 export type CreatePilotSessionMutationResult = Awaited<ReturnType<typeof createPilotSession>>;

@@ -15,6 +15,7 @@ import { LightLoading } from '@refly-packages/ai-workspace-common/components/com
 import { HomeRedirect } from '@refly-packages/ai-workspace-common/components/home-redirect';
 import { usePublicAccessPage } from '@refly-packages/ai-workspace-common/hooks/use-is-share-page';
 import { isDesktop } from '@refly-packages/ai-workspace-common/utils/env';
+import { useGetMediaModel } from '@refly-packages/ai-workspace-common/hooks/use-get-media-model';
 
 // Lazy load components
 const Home = lazy(() => import('@/pages/home-new'));
@@ -64,6 +65,8 @@ export const AppRouter = (props: { layout?: any }) => {
 
   // Check user login status
   useGetUserSettings();
+
+  useGetMediaModel();
 
   // Change locale if not matched
   const { i18n } = useTranslation();

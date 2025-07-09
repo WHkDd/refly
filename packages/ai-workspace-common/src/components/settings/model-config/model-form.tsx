@@ -29,6 +29,25 @@ import { Loading } from '../parser-config';
 import { ProviderModal } from '@refly-packages/ai-workspace-common/components/settings/model-providers/provider-modal';
 import { Provider } from '@refly-packages/ai-workspace-common/requests/types.gen';
 import getClient from '@refly-packages/ai-workspace-common/requests/proxiedRequest';
+import mediaConfig from './media-config.json';
+
+// Type definition for media config
+interface MediaModelConfig {
+  config: {
+    modelId: string;
+    capabilities: {
+      image?: boolean;
+      video?: boolean;
+      audio?: boolean;
+      vision?: boolean;
+    };
+  };
+  name: string;
+}
+
+interface MediaConfig {
+  [providerId: string]: MediaModelConfig[];
+}
 
 export const ModelFormModal = memo(
   ({
@@ -116,7 +135,7 @@ export const ModelFormModal = memo(
           modelName: values.name,
         };
 
-        if (filterProviderCategory === 'llm') {
+        if (filterProviderCategory === 'llm' || filterProviderCategory === 'mediaGeneration') {
           const capabilitiesObject = {};
           if (Array.isArray(values.capabilities)) {
             for (const capability of values.capabilities) {
@@ -193,41 +212,6 @@ export const ModelFormModal = memo(
         setCachedOptions(selectedProviderId, options);
       }
     }, [providerItemOptions, selectedProviderId, setCachedOptions]);
-
-    // Get current model options based on the selected provider
-    const modelIdOptions = useMemo(() => {
-      if (!selectedProviderId) return [];
-
-      // If we have cached data, return it
-      const cachedOptions = getCachedOptions(selectedProviderId);
-      if (cachedOptions) {
-        return cachedOptions;
-      }
-
-      // If we're loading data, return empty array
-      if (loadingItemOptions) {
-        return [];
-      }
-
-      // If we have fresh data, update cache and return it
-      if (providerItemOptions?.data) {
-        const options = providerItemOptions.data.map((item) => ({
-          label: item.config?.modelId || '',
-          value: item.config?.modelId || '',
-          ...item,
-        }));
-        setCachedOptions(selectedProviderId, options);
-        return options;
-      }
-
-      return [];
-    }, [
-      selectedProviderId,
-      loadingItemOptions,
-      providerItemOptions?.data,
-      getCachedOptions,
-      setCachedOptions,
-    ]);
 
     const createModelMutation = useCallback(
       async (values: any) => {
@@ -338,6 +322,56 @@ export const ModelFormModal = memo(
       return providerOptions.find((p) => p.value === selectedProviderId);
     }, [selectedProviderId, providerOptions]);
 
+    // Get current model options based on the selected provider
+    const modelIdOptions = useMemo(() => {
+      if (!selectedProviderId) return [];
+
+      // If we have cached data, return it
+      const cachedOptions = getCachedOptions(selectedProviderId);
+      if (cachedOptions) {
+        return cachedOptions;
+      }
+
+      // For media generation category, use the static configuration
+      if (filterProviderCategory === 'mediaGeneration') {
+        const provider = providerOptions.find((p) => p.value === selectedProviderId);
+        const providerKey = provider?.providerKey || selectedProviderId;
+        return (
+          (mediaConfig as MediaConfig)[providerKey]?.map((item) => ({
+            label: item.config?.modelId || '',
+            value: item.config?.modelId || '',
+            ...item,
+          })) || []
+        );
+      }
+
+      // If we're loading data, return empty array
+      if (loadingItemOptions) {
+        return [];
+      }
+
+      // If we have fresh data, update cache and return it
+      if (providerItemOptions?.data) {
+        const options = providerItemOptions.data.map((item) => ({
+          label: item.config?.modelId || '',
+          value: item.config?.modelId || '',
+          ...item,
+        }));
+        setCachedOptions(selectedProviderId, options);
+        return options;
+      }
+
+      return [];
+    }, [
+      selectedProviderId,
+      loadingItemOptions,
+      providerItemOptions?.data,
+      getCachedOptions,
+      setCachedOptions,
+      filterProviderCategory,
+      providerOptions,
+    ]);
+
     if (!selectedProviderId && providerOptions?.[0]?.value) {
       setSelectedProviderId(providerOptions?.[0]?.value);
       form.setFieldsValue({ providerId: providerOptions?.[0]?.value });
@@ -370,15 +404,22 @@ export const ModelFormModal = memo(
           (option?.config as LLMModelConfig)?.capabilities as ModelCapabilities,
         );
 
-        form.setFieldsValue({
+        const formValues: any = {
           name: option?.name ?? '',
-          contextLimit: (option?.config as LLMModelConfig)?.contextLimit,
-          maxOutput: (option?.config as LLMModelConfig)?.maxOutput,
-          capabilities,
           enabled: true,
-        });
+        };
+
+        if (filterProviderCategory === 'llm') {
+          formValues.contextLimit = (option?.config as LLMModelConfig)?.contextLimit;
+          formValues.maxOutput = (option?.config as LLMModelConfig)?.maxOutput;
+          formValues.capabilities = capabilities;
+        } else if (filterProviderCategory === 'mediaGeneration') {
+          formValues.capabilities = capabilities;
+        }
+
+        form.setFieldsValue(formValues);
       },
-      [form, resetFormExcludeField, getCapabilitiesFromObject],
+      [form, resetFormExcludeField, getCapabilitiesFromObject, filterProviderCategory],
     );
 
     useEffect(() => {
@@ -414,6 +455,8 @@ export const ModelFormModal = memo(
           if (filterProviderCategory === 'llm') {
             formValues.contextLimit = config.contextLimit;
             formValues.maxOutput = config.maxOutput;
+            formValues.capabilities = capabilitiesArray;
+          } else if (filterProviderCategory === 'mediaGeneration') {
             formValues.capabilities = capabilitiesArray;
           } else if (filterProviderCategory === 'embedding') {
             formValues.batchSize = config.batchSize;
@@ -496,6 +539,32 @@ export const ModelFormModal = memo(
                   <Checkbox value="contextCaching">
                     {t('settings.modelConfig.contextCaching')}
                   </Checkbox>
+                </div>
+              </Checkbox.Group>
+            </Form.Item>
+          </>
+        );
+      }
+
+      if (filterProviderCategory === 'mediaGeneration') {
+        return (
+          <>
+            <Form.Item name="capabilities" label={t('settings.modelConfig.capabilities')}>
+              <Checkbox.Group
+                className="w-full"
+                key={`capabilities-${JSON.stringify(form.getFieldValue('capabilities'))}`}
+                onChange={(checkedValues) => {
+                  // Limit to single selection for mediaGeneration
+                  if (checkedValues.length > 1) {
+                    const latestValue = checkedValues[checkedValues.length - 1];
+                    form.setFieldsValue({ capabilities: [latestValue] });
+                  }
+                }}
+              >
+                <div className="grid grid-cols-3 gap-1">
+                  <Checkbox value="image">{t('settings.modelConfig.image')}</Checkbox>
+                  <Checkbox value="video">{t('settings.modelConfig.video')}</Checkbox>
+                  <Checkbox value="audio">{t('settings.modelConfig.audio')}</Checkbox>
                 </div>
               </Checkbox.Group>
             </Form.Item>

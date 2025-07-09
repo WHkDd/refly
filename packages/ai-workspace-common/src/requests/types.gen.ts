@@ -745,7 +745,8 @@ export type EntityType =
   | 'project'
   | 'skillResponse'
   | 'codeArtifact'
-  | 'page';
+  | 'page'
+  | 'mediaResult';
 
 /**
  * Entity
@@ -1586,6 +1587,14 @@ export type CodeArtifact = {
    * Code artifact language
    */
   language?: string;
+  /**
+   * Action result ID
+   */
+  resultId?: string;
+  /**
+   * Action result version
+   */
+  resultVersion?: number;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -1662,6 +1671,14 @@ export type ActionResult = {
    * Errors
    */
   errors?: Array<string>;
+  /**
+   * Media generation output URL (for media type actions)
+   */
+  outputUrl?: string;
+  /**
+   * Media generation output storage key
+   */
+  storageKey?: string;
   /**
    * Pilot step ID
    */
@@ -2791,6 +2808,14 @@ export type UpsertCodeArtifactRequest = {
    */
   language?: string;
   /**
+   * Action result ID
+   */
+  resultId?: string;
+  /**
+   * Action result version
+   */
+  resultVersion?: number;
+  /**
    * Code artifact preview storage key
    */
   previewStorageKey?: string;
@@ -2802,6 +2827,13 @@ export type UpsertCodeArtifactRequest = {
 
 export type UpsertCodeArtifactResponse = BaseResponse & {
   data?: CodeArtifact;
+};
+
+export type ListCodeArtifactResponse = BaseResponse & {
+  /**
+   * Code artifact list
+   */
+  data?: Array<CodeArtifact>;
 };
 
 export type GetCodeArtifactDetailResponse = BaseResponse & {
@@ -3318,7 +3350,7 @@ export type SkillInvocationConfig = {
   context?: SkillContextRuleGroup;
 };
 
-export type ActionType = 'skill' | 'tool';
+export type ActionType = 'skill' | 'tool' | 'media';
 
 export type ActionContextType = 'resource' | 'document';
 
@@ -3508,6 +3540,34 @@ export type DeleteSkillTriggerRequest = {
    * Trigger ID to delete
    */
   triggerId: string;
+};
+
+/**
+ * media type
+ */
+export type MediaType = 'image' | 'video' | 'audio';
+
+export type MediaGenerateRequest = {
+  mediaType: MediaType;
+  /**
+   * Model name for content generation
+   */
+  model?: string;
+  /**
+   * Optional provider selection
+   */
+  provider?: string | null;
+  /**
+   * Text prompt for content generation
+   */
+  prompt: string;
+};
+
+export type MediaGenerateResponse = BaseResponse & {
+  /**
+   * Media generation result ID
+   */
+  resultId?: string;
 };
 
 export type PilotStepStatus = 'init' | 'executing' | 'finish' | 'failed';
@@ -4123,6 +4183,21 @@ export type ConvertResponse = BaseResponse & {
   };
 };
 
+export type MediaGenerationModelCapabilities = {
+  /**
+   * Whether this model supports image generation
+   */
+  image?: boolean;
+  /**
+   * Whether this model supports video generation
+   */
+  video?: boolean;
+  /**
+   * Whether this model supports audio generation
+   */
+  audio?: boolean;
+};
+
 export type ModelCapabilities = {
   /**
    * Whether this model supports function calling
@@ -4198,7 +4273,8 @@ export type ProviderCategory =
   | 'reranker'
   | 'webSearch'
   | 'urlParsing'
-  | 'pdfParsing';
+  | 'pdfParsing'
+  | 'mediaGeneration';
 
 /**
  * General provider info
@@ -4265,6 +4341,24 @@ export type LLMModelConfig = {
 };
 
 /**
+ * Provider config for media generation
+ */
+export type MediaGenerationModelConfig = {
+  /**
+   * Model ID
+   */
+  modelId: string;
+  /**
+   * Model name
+   */
+  modelName: string;
+  /**
+   * Model capabilities
+   */
+  capabilities?: MediaGenerationModelCapabilities;
+};
+
+/**
  * Provider config for embeddings
  */
 export type EmbeddingModelConfig = {
@@ -4308,7 +4402,11 @@ export type RerankerModelConfig = {
   relevanceThreshold?: number;
 };
 
-export type ProviderItemConfig = LLMModelConfig | EmbeddingModelConfig | RerankerModelConfig;
+export type ProviderItemConfig =
+  | LLMModelConfig
+  | EmbeddingModelConfig
+  | RerankerModelConfig
+  | MediaGenerationModelConfig;
 
 export type ProviderItemOption = {
   /**
@@ -4579,7 +4677,11 @@ export type CanvasNodeType =
   | 'toolResponse'
   | 'memo'
   | 'group'
-  | 'image';
+  | 'image'
+  | 'video'
+  | 'audio'
+  | 'mediaSkill'
+  | 'mediaSkillResponse';
 
 export type CanvasNodeData = {
   /**
@@ -5305,6 +5407,35 @@ export type DeleteProjectItemsResponse = BaseResponse;
 
 export type DeleteProjectItemsError = unknown;
 
+export type ListCodeArtifactsData = {
+  query?: {
+    /**
+     * Whether to include content
+     */
+    needContent?: boolean;
+    /**
+     * Page number
+     */
+    page?: number;
+    /**
+     * Page size
+     */
+    pageSize?: number;
+    /**
+     * Action result ID
+     */
+    resultId?: string;
+    /**
+     * Action result version
+     */
+    resultVersion?: number;
+  };
+};
+
+export type ListCodeArtifactsResponse = ListCodeArtifactResponse;
+
+export type ListCodeArtifactsError = unknown;
+
 export type GetCodeArtifactDetailData = {
   query: {
     /**
@@ -5657,6 +5788,14 @@ export type DeleteSkillTriggerData = {
 export type DeleteSkillTriggerResponse = BaseResponse;
 
 export type DeleteSkillTriggerError = unknown;
+
+export type GenerateMediaData = {
+  body: MediaGenerateRequest;
+};
+
+export type GenerateMediaResponse = MediaGenerateResponse;
+
+export type GenerateMediaError = unknown;
 
 export type CreatePilotSessionData = {
   body: CreatePilotSessionRequest;

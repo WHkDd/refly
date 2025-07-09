@@ -25,6 +25,7 @@ import {
   listCanvases,
   listCanvasTemplateCategories,
   listCanvasTemplates,
+  listCodeArtifacts,
   listDocuments,
   listLabelClasses,
   listLabelInstances,
@@ -81,6 +82,8 @@ import {
   ListCanvasTemplateCategoriesError,
   ListCanvasTemplatesData,
   ListCanvasTemplatesError,
+  ListCodeArtifactsData,
+  ListCodeArtifactsError,
   ListDocumentsData,
   ListDocumentsError,
   ListLabelClassesData,
@@ -399,6 +402,21 @@ export const useGetProjectDetailSuspense = <
     queryKey: Common.UseGetProjectDetailKeyFn(clientOptions, queryKey),
     queryFn: () =>
       getProjectDetail({ ...clientOptions }).then((response) => response.data as TData) as TData,
+    ...options,
+  });
+export const useListCodeArtifactsSuspense = <
+  TData = Common.ListCodeArtifactsDefaultResponse,
+  TError = ListCodeArtifactsError,
+  TQueryKey extends Array<unknown> = unknown[],
+>(
+  clientOptions: Options<ListCodeArtifactsData, true> = {},
+  queryKey?: TQueryKey,
+  options?: Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'>,
+) =>
+  useSuspenseQuery<TData, TError>({
+    queryKey: Common.UseListCodeArtifactsKeyFn(clientOptions, queryKey),
+    queryFn: () =>
+      listCodeArtifacts({ ...clientOptions }).then((response) => response.data as TData) as TData,
     ...options,
   });
 export const useGetCodeArtifactDetailSuspense = <

@@ -32,6 +32,8 @@ import { PagesModule } from './pages/pages.module';
 import { ProjectModule } from './project/project.module';
 import { McpServerModule } from './mcp-server/mcp-server.module';
 import { InternalMcpModule } from './internal-mcp/internal-mcp.module';
+import { MediaGeneratorModule } from './media-generator/media-generator.module';
+
 import { isDesktop } from '../utils/runtime';
 
 class CustomThrottlerGuard extends ThrottlerGuard {
@@ -96,6 +98,7 @@ class CustomThrottlerGuard extends ThrottlerGuard {
     ProjectModule,
     McpServerModule,
     InternalMcpModule,
+    MediaGeneratorModule,
     ...(isDesktop()
       ? []
       : [

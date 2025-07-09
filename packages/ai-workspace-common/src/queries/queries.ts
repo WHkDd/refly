@@ -42,7 +42,6 @@ import {
   deleteProject,
   deleteProjectItems,
   deleteProvider,
-  testProviderConnection,
   deleteProviderItem,
   deleteReferences,
   deleteResource,
@@ -55,6 +54,7 @@ import {
   emailSignup,
   exportCanvas,
   exportDocument,
+  generateMedia,
   getActionResult,
   getAuthConfig,
   getCanvasData,
@@ -76,6 +76,7 @@ import {
   listCanvases,
   listCanvasTemplateCategories,
   listCanvasTemplates,
+  listCodeArtifacts,
   listDocuments,
   listLabelClasses,
   listLabelInstances,
@@ -104,6 +105,7 @@ import {
   serveStatic,
   sharePage,
   streamInvokeSkill,
+  testProviderConnection,
   unpinSkillInstance,
   updateCanvas,
   updateCanvasTemplate,
@@ -227,6 +229,8 @@ import {
   ExportCanvasError,
   ExportDocumentData,
   ExportDocumentError,
+  GenerateMediaData,
+  GenerateMediaError,
   GetActionResultData,
   GetActionResultError,
   GetAuthConfigError,
@@ -262,6 +266,8 @@ import {
   ListCanvasTemplateCategoriesError,
   ListCanvasTemplatesData,
   ListCanvasTemplatesError,
+  ListCodeArtifactsData,
+  ListCodeArtifactsError,
   ListDocumentsData,
   ListDocumentsError,
   ListLabelClassesData,
@@ -313,6 +319,8 @@ import {
   SharePageError,
   StreamInvokeSkillData,
   StreamInvokeSkillError,
+  TestProviderConnectionData,
+  TestProviderConnectionError,
   UnpinSkillInstanceData,
   UnpinSkillInstanceError,
   UpdateCanvasData,
@@ -640,6 +648,21 @@ export const useGetProjectDetail = <
     queryKey: Common.UseGetProjectDetailKeyFn(clientOptions, queryKey),
     queryFn: () =>
       getProjectDetail({ ...clientOptions }).then((response) => response.data as TData) as TData,
+    ...options,
+  });
+export const useListCodeArtifacts = <
+  TData = Common.ListCodeArtifactsDefaultResponse,
+  TError = ListCodeArtifactsError,
+  TQueryKey extends Array<unknown> = unknown[],
+>(
+  clientOptions: Options<ListCodeArtifactsData, true> = {},
+  queryKey?: TQueryKey,
+  options?: Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'>,
+) =>
+  useQuery<TData, TError>({
+    queryKey: Common.UseListCodeArtifactsKeyFn(clientOptions, queryKey),
+    queryFn: () =>
+      listCodeArtifacts({ ...clientOptions }).then((response) => response.data as TData) as TData,
     ...options,
   });
 export const useGetCodeArtifactDetail = <
@@ -1971,6 +1994,23 @@ export const useDeleteSkillTrigger = <
   useMutation<TData, TError, Options<DeleteSkillTriggerData, true>, TContext>({
     mutationKey: Common.UseDeleteSkillTriggerKeyFn(mutationKey),
     mutationFn: (clientOptions) => deleteSkillTrigger(clientOptions) as unknown as Promise<TData>,
+    ...options,
+  });
+export const useGenerateMedia = <
+  TData = Common.GenerateMediaMutationResult,
+  TError = GenerateMediaError,
+  TQueryKey extends Array<unknown> = unknown[],
+  TContext = unknown,
+>(
+  mutationKey?: TQueryKey,
+  options?: Omit<
+    UseMutationOptions<TData, TError, Options<GenerateMediaData, true>, TContext>,
+    'mutationKey' | 'mutationFn'
+  >,
+) =>
+  useMutation<TData, TError, Options<GenerateMediaData, true>, TContext>({
+    mutationKey: Common.UseGenerateMediaKeyFn(mutationKey),
+    mutationFn: (clientOptions) => generateMedia(clientOptions) as unknown as Promise<TData>,
     ...options,
   });
 export const useCreatePilotSession = <

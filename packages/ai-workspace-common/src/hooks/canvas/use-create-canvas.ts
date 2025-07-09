@@ -7,6 +7,7 @@ import { DATA_NUM } from '@refly-packages/ai-workspace-common/hooks/use-handle-s
 
 interface CreateCanvasOptions {
   isPilotActivated?: boolean;
+  isMediaGeneration?: boolean;
 }
 
 export const useCreateCanvas = ({
@@ -62,6 +63,10 @@ export const useCreateCanvas = ({
       // If pilot is activated, create a pilot session
       if (options?.isPilotActivated) {
         queryParams.append('isPilotActivated', 'true');
+      }
+
+      if (options?.isMediaGeneration) {
+        queryParams.append('isMediaGeneration', 'true');
       }
 
       // Add canvasId to query params if in project view

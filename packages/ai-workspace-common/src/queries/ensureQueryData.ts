@@ -25,6 +25,7 @@ import {
   listCanvases,
   listCanvasTemplateCategories,
   listCanvasTemplates,
+  listCodeArtifacts,
   listDocuments,
   listLabelClasses,
   listLabelInstances,
@@ -59,6 +60,7 @@ import {
   GetResourceDetailData,
   ListCanvasesData,
   ListCanvasTemplatesData,
+  ListCodeArtifactsData,
   ListDocumentsData,
   ListLabelClassesData,
   ListLabelInstancesData,
@@ -227,6 +229,14 @@ export const ensureUseGetProjectDetailData = (
   queryClient.ensureQueryData({
     queryKey: Common.UseGetProjectDetailKeyFn(clientOptions),
     queryFn: () => getProjectDetail({ ...clientOptions }).then((response) => response.data),
+  });
+export const ensureUseListCodeArtifactsData = (
+  queryClient: QueryClient,
+  clientOptions: Options<ListCodeArtifactsData, true> = {},
+) =>
+  queryClient.ensureQueryData({
+    queryKey: Common.UseListCodeArtifactsKeyFn(clientOptions),
+    queryFn: () => listCodeArtifacts({ ...clientOptions }).then((response) => response.data),
   });
 export const ensureUseGetCodeArtifactDetailData = (
   queryClient: QueryClient,

@@ -5,7 +5,7 @@ import { ModelIcon } from '@lobehub/icons';
 import { getPopupContainer } from '@refly-packages/ai-workspace-common/utils/ui';
 import { LLMModelConfig, ModelInfo, TokenUsageMeter } from '@refly/openapi-schema';
 import { useListProviderItems } from '@refly-packages/ai-workspace-common/queries';
-import { IconDown, IconError } from '@refly-packages/ai-workspace-common/components/common/icon';
+import { IconError } from '@refly-packages/ai-workspace-common/components/common/icon';
 import { LuInfo, LuSettings2 } from 'react-icons/lu';
 import {
   SettingsModalActiveTab,
@@ -17,6 +17,7 @@ import { modelEmitter } from '@refly-packages/ai-workspace-common/utils/event-em
 import { useGroupModels } from '@refly-packages/ai-workspace-common/hooks/use-group-models';
 import './index.scss';
 import { useUserStoreShallow } from '@refly-packages/ai-workspace-common/stores/user';
+import { DownOutlined } from '@ant-design/icons';
 
 interface ModelSelectorProps {
   model: ModelInfo | null;
@@ -58,7 +59,7 @@ const SelectedModelDisplay = memo(
         icon={<ModelIcon model={model.name} type={'color'} />}
       >
         {model.label}
-        <IconDown />
+        <DownOutlined />
       </Button>
     );
   },
@@ -86,7 +87,7 @@ const ModelLabel = memo(
 ModelLabel.displayName = 'ModelLabel';
 
 // Create a memoized settings button component
-const SettingsButton = memo(
+export const SettingsButton = memo(
   ({
     handleOpenSettingModal,
     setDropdownOpen,

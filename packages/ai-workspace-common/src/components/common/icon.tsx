@@ -9,6 +9,8 @@ import {
   HiMinus,
   HiSparkles,
   HiOutlineHome,
+  HiOutlineFilm,
+  HiOutlineSpeakerWave,
 } from 'react-icons/hi2';
 import { IoIosMore } from 'react-icons/io';
 import { IoLanguage } from 'react-icons/io5';
@@ -91,7 +93,7 @@ import DeepSeekIcon from '@refly-packages/ai-workspace-common/assets/deepseek.sv
 import MistralIcon from '@refly-packages/ai-workspace-common/assets/mistral.svg';
 import GrokIcon from '@refly-packages/ai-workspace-common/assets/grok.svg';
 import ChromeIcon from '@refly-packages/ai-workspace-common/assets/chrome.svg';
-import { MdOutlineMouse, MdOutlineRemoveCircleOutline } from 'react-icons/md';
+import { MdOutlineMouse, MdOutlineRemoveCircleOutline, MdOutlinePermMedia } from 'react-icons/md';
 
 import ReflyLogo from '@refly-packages/ai-workspace-common/assets/logo.svg';
 import { memo } from 'react';
@@ -181,6 +183,9 @@ export const IconCloud = LuCloud;
 export const IconSlideshow = RiSlideshow2Line;
 export const IconRefresh = LuRefreshCw;
 export const IconHome = HiOutlineHome;
+export const IconMedia = MdOutlinePermMedia;
+export const IconVideo = HiOutlineFilm;
+export const IconAudio = HiOutlineSpeakerWave;
 
 export const IconChrome = ChromeIcon;
 export const ModelProviderIcons = {

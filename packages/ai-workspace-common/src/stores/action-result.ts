@@ -32,6 +32,7 @@ interface ActionResultState {
 
   // Individual update actions
   updateActionResult: (resultId: string, result: ActionResult) => void;
+  removeActionResult: (resultId: string) => void;
   startPolling: (resultId: string, version: number) => void;
   stopPolling: (resultId: string) => void;
   incrementErrorCount: (resultId: string) => void;
@@ -138,6 +139,18 @@ export const useActionResultStore = create<ActionResultState>()(
 
         // Clean up old results after update
         get().cleanupOldResults();
+      },
+
+      // Remove action result from store
+      removeActionResult: (resultId: string) => {
+        set((state) => {
+          const newResultMap = { ...state.resultMap };
+          delete newResultMap[resultId];
+          return {
+            ...state,
+            resultMap: newResultMap,
+          };
+        });
       },
 
       // Queue update for batching

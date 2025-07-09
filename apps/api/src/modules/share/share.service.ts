@@ -58,6 +58,7 @@ const SHARE_CODE_PREFIX: Record<EntityType, string> = {
   share: 'sha-',
   user: 'usr-',
   project: 'prj-',
+  mediaResult: 'med-',
 };
 
 function genShareId(entityType: keyof typeof SHARE_CODE_PREFIX): string {

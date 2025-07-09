@@ -185,6 +185,9 @@ import type {
   DeleteProjectItemsData,
   DeleteProjectItemsError,
   DeleteProjectItemsResponse,
+  ListCodeArtifactsData,
+  ListCodeArtifactsError,
+  ListCodeArtifactsResponse,
   GetCodeArtifactDetailData,
   GetCodeArtifactDetailError,
   GetCodeArtifactDetailResponse2,
@@ -273,6 +276,9 @@ import type {
   DeleteSkillTriggerData,
   DeleteSkillTriggerError,
   DeleteSkillTriggerResponse,
+  GenerateMediaData,
+  GenerateMediaError,
+  GenerateMediaResponse,
   CreatePilotSessionData,
   CreatePilotSessionError,
   CreatePilotSessionResponse,
@@ -1308,6 +1314,23 @@ export const deleteProjectItems = <ThrowOnError extends boolean = false>(
 };
 
 /**
+ * List code artifacts
+ * List all code artifacts
+ */
+export const listCodeArtifacts = <ThrowOnError extends boolean = false>(
+  options?: Options<ListCodeArtifactsData, ThrowOnError>,
+) => {
+  return (options?.client ?? client).get<
+    ListCodeArtifactsResponse,
+    ListCodeArtifactsError,
+    ThrowOnError
+  >({
+    ...options,
+    url: '/codeArtifact/list',
+  });
+};
+
+/**
  * Get code artifact detail
  * Get code artifact detail by artifact ID
  */
@@ -1790,6 +1813,19 @@ export const deleteSkillTrigger = <ThrowOnError extends boolean = false>(
   >({
     ...options,
     url: '/skill/trigger/delete',
+  });
+};
+
+/**
+ * Generate multimedia content
+ * Generate image, video or audio based on the given prompt
+ */
+export const generateMedia = <ThrowOnError extends boolean = false>(
+  options: Options<GenerateMediaData, ThrowOnError>,
+) => {
+  return (options?.client ?? client).post<GenerateMediaResponse, GenerateMediaError, ThrowOnError>({
+    ...options,
+    url: '/media/generate',
   });
 };
 

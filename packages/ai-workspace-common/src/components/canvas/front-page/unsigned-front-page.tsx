@@ -369,7 +369,7 @@ export const UnsignedFrontPage = memo(() => {
 
           {canvasTemplateEnabled && (
             <div className="h-full flex flex-col mt-10">
-              <div className="flex justify-between items-center pt-6 mx-2">
+              <div className="flex justify-between items-center mx-2">
                 <div>
                   <h3 className="text-base font-medium dark:text-gray-100">
                     {t('frontPage.fromCommunity')}

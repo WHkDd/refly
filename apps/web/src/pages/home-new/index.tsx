@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useState, useMemo } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Skill } from '@refly/openapi-schema';
 import { ChatInput } from '@refly-packages/ai-workspace-common/components/canvas/launchpad/chat-input';
@@ -8,7 +8,6 @@ import { getSkillIcon, IconPlus } from '@refly-packages/ai-workspace-common/comp
 import { Button, Form } from 'antd';
 import { ConfigManager } from '@refly-packages/ai-workspace-common/components/canvas/launchpad/config-manager';
 import { Actions } from '@refly-packages/ai-workspace-common/components/canvas/front-page/action';
-import { useListSkills } from '@refly-packages/ai-workspace-common/hooks/use-find-skill';
 import { TemplateList } from '@refly-packages/ai-workspace-common/components/canvas-template/template-list';
 import { canvasTemplateEnabled } from '@refly-packages/ai-workspace-common/utils/env';
 import { AnimatedGridPattern } from '@refly-packages/ai-workspace-common/components/magicui/animated-grid-pattern';
@@ -23,8 +22,6 @@ const UnsignedFrontPage = memo(() => {
   const { t, i18n } = useTranslation();
   const [form] = Form.useForm();
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
-  const skills = useListSkills();
   const templateLanguage = i18n.language;
   const templateCategoryId = '';
 
@@ -65,64 +62,6 @@ const UnsignedFrontPage = memo(() => {
   const handleLogin = useCallback(() => {
     setLoginModalOpen(true);
   }, [setLoginModalOpen]);
-
-  const findSkillByName = useCallback(
-    (name: string) => {
-      return skills.find((skill) => skill.name === name) ?? null;
-    },
-    [skills],
-  );
-
-  const handlePresetScenario = useCallback(
-    (scenarioId: string, skillName: string, queryText: string) => {
-      setActiveScenarioId(scenarioId);
-      const skill = findSkillByName(skillName);
-      if (skill) {
-        handleSelectSkill(skill);
-        setQuery(queryText);
-      }
-    },
-    [findSkillByName, handleSelectSkill, setQuery],
-  );
-
-  // Define preset scenarios
-  const presetScenarios = useMemo(
-    () => [
-      {
-        id: 'ppt',
-        title: t('canvas.presetScenarios.generatePPT'),
-        description: t('canvas.presetScenarios.generatePPTDesc'),
-        skillName: 'codeArtifacts',
-        query: t('canvas.presetScenarios.generatePPTQuery'),
-        icon: '📊',
-      },
-      {
-        id: 'landing',
-        title: t('canvas.presetScenarios.generateLanding'),
-        description: t('canvas.presetScenarios.generateLandingDesc'),
-        skillName: 'codeArtifacts',
-        query: t('canvas.presetScenarios.generateLandingQuery'),
-        icon: '🌐',
-      },
-      {
-        id: 'xiaohongshu',
-        title: t('canvas.presetScenarios.generateXHS'),
-        description: t('canvas.presetScenarios.generateXHSDesc'),
-        skillName: 'codeArtifacts',
-        query: t('canvas.presetScenarios.generateXHSQuery'),
-        icon: '📱',
-      },
-      {
-        id: 'mediaContent',
-        title: t('canvas.presetScenarios.generateMediaContent'),
-        description: t('canvas.presetScenarios.generateMediaContentDesc'),
-        skillName: 'generateDoc',
-        query: t('canvas.presetScenarios.generateMediaContentQuery'),
-        icon: '📝',
-      },
-    ],
-    [t],
-  );
 
   useEffect(() => {
     return () => {
@@ -175,7 +114,6 @@ const UnsignedFrontPage = memo(() => {
                         size="small"
                         onClick={() => {
                           handleSelectSkill(null);
-                          setActiveScenarioId(null);
                         }}
                       >
                         {t('common.cancel')}
@@ -242,38 +180,6 @@ const UnsignedFrontPage = memo(() => {
                     ]}
                   />
                 </div>
-              </div>
-            </div>
-
-            <div className="mt-6 mx-2 w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {presetScenarios.map((scenario) => (
-                  <div
-                    key={scenario.id}
-                    className={`group bg-white/90 backdrop-blur-sm rounded-md ring-1 dark:bg-gray-800/90 ${
-                      activeScenarioId === scenario.id
-                        ? 'ring-green-500 bg-green-50/90 dark:bg-green-900/20'
-                        : 'ring-gray-200 dark:ring-gray-600'
-                    } py-2 px-3 cursor-pointer transition-all duration-200 ease-in-out 
-                  hover:ring-green-400 hover:bg-green-50/90
-                  dark:hover:bg-green-800/20 dark:hover:ring-green-500`}
-                    onClick={() =>
-                      handlePresetScenario(scenario.id, scenario.skillName, scenario.query)
-                    }
-                  >
-                    <div className="flex items-center mb-1">
-                      <div className="text-2xl mr-2 transition-transform duration-200 ease-in-out">
-                        {scenario.icon}
-                      </div>
-                      <h5 className="text-sm font-medium text-gray-800 dark:text-gray-100 transition-colors duration-200 group-hover:text-green-700 dark:group-hover:text-green-300">
-                        {scenario.title}
-                      </h5>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 transition-colors duration-200 group-hover:text-gray-700 dark:group-hover:text-gray-300">
-                      {scenario.description}
-                    </p>
-                  </div>
-                ))}
               </div>
             </div>
 

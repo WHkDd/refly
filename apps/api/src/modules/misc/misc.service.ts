@@ -33,6 +33,7 @@ import {
   ResourceNotFoundError,
   DocumentNotFoundError,
   CodeArtifactNotFoundError,
+  ActionResultNotFoundError,
 } from '@refly/errors';
 import { FileObject } from '../misc/misc.dto';
 import { createId } from '@paralleldrive/cuid2';
@@ -164,6 +165,16 @@ export class MiscService implements OnModuleInit {
       });
       if (!codeArtifact) {
         throw new CodeArtifactNotFoundError();
+      }
+    } else if (entityType === 'mediaResult') {
+      const actionResult = await this.prisma.actionResult.findFirst({
+        where: {
+          resultId: entityId,
+          uid: user.uid,
+        },
+      });
+      if (!actionResult) {
+        throw new ActionResultNotFoundError();
       }
     } else {
       throw new ParamsError(`Invalid entity type: ${entityType}`);

@@ -356,6 +356,7 @@ interface ModelProvidersProps {
 }
 
 export const ModelProviders = ({ visible }: ModelProvidersProps) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('my-providers');
 
   // Get installed providers for Provider Store
@@ -379,13 +380,13 @@ export const ModelProviders = ({ visible }: ModelProvidersProps) => {
   const tabItems = [
     {
       key: 'my-providers',
-      label: 'My Providers',
-      icon: <LuList className="h-4 w-4" />,
+      label: t('settings.modelProviders.myProviders'),
+      icon: <LuList className="h-4 w-4 flex items-center" />,
     },
     {
       key: 'provider-store',
-      label: 'Provider Store',
-      icon: <LuStore className="h-4 w-4" />,
+      label: t('settings.modelProviders.providerStore'),
+      icon: <LuStore className="h-4 w-4 flex items-center" />,
     },
   ];
 
@@ -423,15 +424,15 @@ export const ModelProviders = ({ visible }: ModelProvidersProps) => {
               cursor-pointer relative px-4 py-2.5 flex items-center justify-center gap-1.5 text-sm font-medium transition-all duration-200 ease-in-out 
               ${
                 activeTab === tab.key
-                  ? 'text-blue-600 dark:text-blue-400'
+                  ? 'text-green-600 dark:text-green-400'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }
             `}
           >
-            <span className="text-sm">{tab.icon}</span>
-            <span>{tab.label}</span>
+            <div className="text-sm">{tab.icon}</div>
+            <div>{tab.label}</div>
             {activeTab === tab.key && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-t-sm" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-400 rounded-t-sm" />
             )}
           </div>
         ))}

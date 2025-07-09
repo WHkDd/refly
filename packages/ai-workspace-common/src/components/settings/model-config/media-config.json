@@ -1,0 +1,157 @@
+{
+  "replicate": [
+    {
+      "config": {
+        "modelId": "black-forest-labs/flux-schnell",
+        "capabilities": {
+          "image": true
+        }
+      },
+      "name": "Flux Schnell"
+    },
+    {
+      "config": {
+        "modelId": "black-forest-labs/flux-dev",
+        "capabilities": {
+          "image": true
+        }
+      },
+      "name": "Flux Dev"
+    },
+    {
+      "config": {
+        "modelId": "black-forest-labs/flux-pro",
+        "capabilities": {
+          "image": true
+        }
+      },
+      "name": "Flux Pro"
+    },
+    {
+      "config": {
+        "modelId": "bytedance/seedance-1-pro",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Seedance 1 Pro"
+    },
+    {
+      "config": {
+        "modelId": "bytedance/seedance-1-lite",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Seedance 1 Lite"
+    },
+    {
+      "config": {
+        "modelId": "minimax/video-01",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Video 01"
+    },
+    {
+      "config": {
+        "modelId": "kwaivgi/kling-v2.1",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Kling v2.1"
+    },
+    {
+      "config": {
+        "modelId": "google/veo-3",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Veo 3"
+    },
+    {
+      "config": {
+        "modelId": "luma/ray-flash-2-540p",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Ray Flash 2 540p"
+    },
+    {
+      "config": {
+        "modelId": "resemble-ai/chatterbox",
+        "capabilities": {
+          "audio": true
+        }
+      },
+      "name": "Chatterbox"
+    },
+    {
+      "config": {
+        "modelId": "google/lyria-2",
+        "capabilities": {
+          "audio": true
+        }
+      },
+      "name": "Lyria 2"
+    }
+  ],
+  "anthropic": [
+    {
+      "config": {
+        "modelId": "claude-3-sonnet",
+        "capabilities": {
+          "image": true,
+          "vision": true
+        }
+      },
+      "name": "Claude 3 Sonnet"
+    }
+  ],
+  "stability": [
+    {
+      "config": {
+        "modelId": "stable-diffusion-xl",
+        "capabilities": {
+          "image": true
+        }
+      },
+      "name": "Stable Diffusion XL"
+    },
+    {
+      "config": {
+        "modelId": "stable-video-diffusion",
+        "capabilities": {
+          "video": true
+        }
+      },
+      "name": "Stable Video Diffusion"
+    }
+  ],
+  "midjourney": [
+    {
+      "config": {
+        "modelId": "midjourney-v6",
+        "capabilities": {
+          "image": true
+        }
+      },
+      "name": "Midjourney v6"
+    }
+  ],
+  "elevenlabs": [
+    {
+      "config": {
+        "modelId": "eleven-multilingual-v2",
+        "capabilities": {
+          "audio": true
+        }
+      },
+      "name": "ElevenLabs Multilingual v2"
+    }
+  ]
+}

@@ -149,8 +149,8 @@ export const NodeActionButtons: FC<NodeActionButtonsProps> = memo(
     const actionButtons = useMemo(() => {
       const buttons: ActionButtonType[] = [];
 
-      // Add askAI button for most node types
-      if (!['skill'].includes(nodeType)) {
+      // Add askAI button for most node types except skill, mediaSkill, audio, video
+      if (!['skill', 'mediaSkill', 'audio', 'video'].includes(nodeType)) {
         buttons.push({
           key: 'askAI',
           icon: IconAskAI,
@@ -243,9 +243,10 @@ export const NodeActionButtons: FC<NodeActionButtonsProps> = memo(
             'opacity-100': shouldShowButtons,
             'opacity-0 pointer-events-none': !shouldShowButtons,
           },
+          ['memo', 'image', 'video'].includes(nodeType) ? 'block' : 'absolute',
           nodeType === 'memo'
-            ? 'block !py-0 gap-0'
-            : 'absolute gap-1 bg-white dark:bg-gray-800 rounded-md shadow-md dark:shadow-gray-900 transition-opacity duration-200',
+            ? '!py-0 gap-0'
+            : 'gap-1 bg-white dark:bg-gray-800 rounded-md shadow-md dark:shadow-gray-900 transition-opacity duration-200',
         )}
         ref={buttonContainerRef}
       >
@@ -277,7 +278,7 @@ export const NodeActionButtons: FC<NodeActionButtonsProps> = memo(
           </Tooltip>
         ))}
 
-        {nodeType !== 'skill' && (
+        {!['skill', 'mediaSkill', 'video', 'audio', 'image'].includes(nodeType) && (
           <Tooltip title={t('canvas.nodeActions.more')} placement="top">
             <Button
               type="text"

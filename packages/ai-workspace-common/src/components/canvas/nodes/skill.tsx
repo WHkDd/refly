@@ -71,7 +71,7 @@ export const SkillNode = memo(
       minWidth: 100,
       maxWidth: 800,
       minHeight: 200,
-      defaultWidth: 384,
+      defaultWidth: 400,
       defaultHeight: 'auto',
     });
 
@@ -258,6 +258,9 @@ export const SkillNode = memo(
       } = data?.metadata ?? {};
       const { runtimeConfig: contextRuntimeConfig } = useContextPanelStore.getState();
       const finalProjectId = getFinalProjectId(projectId);
+
+      console.log('contextRuntimeConfig', contextItems);
+      // return;
 
       deleteElements({ nodes: [node] });
 

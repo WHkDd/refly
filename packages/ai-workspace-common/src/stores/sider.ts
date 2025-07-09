@@ -21,6 +21,7 @@ export enum SettingsModalActiveTab {
   ParserConfig = 'parserConfig',
   DefaultModel = 'defaultModel',
   McpServer = 'mcpServer',
+  Appearance = 'appearance',
 }
 
 interface SiderState {

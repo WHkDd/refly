@@ -116,7 +116,7 @@
         "en": "Replicate provides a platform to run thousands of open-source AI models, including text generation and embedding, with a cloud API.",
         "zh-CN": "Replicate 提供一个平台，让您可以通过云 API 运行数以千计的开源 AI 模型，包括文本生成和嵌入。"
       },
-      "categories": ["llm", "embedding"],
+      "categories": ["mediaGeneration"],
       "documentation": "https://replicate.com/docs",
       "icon": "https://static.refly.ai/icons/providers/replicate.png"
     },
@@ -323,6 +323,18 @@
       "categories": ["llm"],
       "documentation": "https://platform.stepfun.com/docs",
       "icon": "https://static.refly.ai/icons/providers/stepfun-ai.png"
+    },
+    {
+      "name": "FAL",
+      "providerKey": "fal",
+      "baseUrl": "https://fal.run/fal-ai",
+      "description": {
+        "en": "FAL provides fast and scalable AI inference for media generation, including audio, image, and video generation models with optimized performance.",
+        "zh-CN": "FAL 提供快速且可扩展的 AI 推理服务，用于媒体生成，包括音频、图像和视频生成模型，具有优化的性能。"
+      },
+      "categories": ["mediaGeneration"],
+      "documentation": "https://fal.ai/docs",
+      "icon": "https://static.refly.ai/icons/providers/fal.png"
     }
   ]
 }

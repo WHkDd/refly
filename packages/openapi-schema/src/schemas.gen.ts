@@ -1075,6 +1075,7 @@ export const EntityTypeSchema = {
     'skillResponse',
     'codeArtifact',
     'page',
+    'mediaResult',
   ],
 } as const;
 
@@ -2181,6 +2182,16 @@ export const ActionResultSchema = {
       items: {
         type: 'string',
       },
+    },
+    outputUrl: {
+      type: 'string',
+      format: 'uri',
+      description: 'Media generation output URL (for media type actions)',
+      example: 'https://example.com/generated/image_123.png',
+    },
+    storageKey: {
+      type: 'string',
+      description: 'Media generation output storage key',
     },
     pilotStepId: {
       type: 'string',
@@ -4747,7 +4758,7 @@ export const SkillInvocationConfigSchema = {
 
 export const ActionTypeSchema = {
   type: 'string',
-  enum: ['skill', 'tool'],
+  enum: ['skill', 'tool', 'media'],
 } as const;
 
 export const ActionContextTypeSchema = {
@@ -5030,6 +5041,54 @@ export const DeleteSkillTriggerRequestSchema = {
       description: 'Trigger ID to delete',
     },
   },
+} as const;
+
+export const MediaTypeSchema = {
+  type: 'string',
+  description: 'media type',
+  enum: ['image', 'video', 'audio'],
+  example: 'image',
+} as const;
+
+export const MediaGenerateRequestSchema = {
+  type: 'object',
+  required: ['mediaType', 'prompt'],
+  properties: {
+    mediaType: {
+      $ref: '#/components/schemas/MediaType',
+    },
+    model: {
+      type: 'string',
+      description: 'Model name for content generation',
+    },
+    provider: {
+      type: 'string',
+      description: 'Optional provider selection',
+      nullable: true,
+    },
+    prompt: {
+      type: 'string',
+      description: 'Text prompt for content generation',
+    },
+  },
+} as const;
+
+export const MediaGenerateResponseSchema = {
+  allOf: [
+    {
+      $ref: '#/components/schemas/BaseResponse',
+    },
+    {
+      type: 'object',
+      properties: {
+        resultId: {
+          type: 'string',
+          description: 'Media generation result ID',
+          example: 'ar-g30e1b80b5g1itbemc0g5jj3',
+        },
+      },
+    },
+  ],
 } as const;
 
 export const PilotStepStatusSchema = {
@@ -5958,6 +6017,24 @@ export const ConvertResponseSchema = {
   ],
 } as const;
 
+export const MediaGenerationModelCapabilitiesSchema = {
+  type: 'object',
+  properties: {
+    image: {
+      type: 'boolean',
+      description: 'Whether this model supports image generation',
+    },
+    video: {
+      type: 'boolean',
+      description: 'Whether this model supports video generation',
+    },
+    audio: {
+      type: 'boolean',
+      description: 'Whether this model supports audio generation',
+    },
+  },
+} as const;
+
 export const ModelCapabilitiesSchema = {
   type: 'object',
   properties: {
@@ -6050,7 +6127,15 @@ export const ListModelsResponseSchema = {
 
 export const ProviderCategorySchema = {
   type: 'string',
-  enum: ['llm', 'embedding', 'reranker', 'webSearch', 'urlParsing', 'pdfParsing'],
+  enum: [
+    'llm',
+    'embedding',
+    'reranker',
+    'webSearch',
+    'urlParsing',
+    'pdfParsing',
+    'mediaGeneration',
+  ],
 } as const;
 
 export const ProviderSchema = {
@@ -6124,6 +6209,26 @@ export const LLMModelConfigSchema = {
   },
 } as const;
 
+export const MediaGenerationModelConfigSchema = {
+  type: 'object',
+  description: 'Provider config for media generation',
+  required: ['modelId', 'modelName'],
+  properties: {
+    modelId: {
+      type: 'string',
+      description: 'Model ID',
+    },
+    modelName: {
+      type: 'string',
+      description: 'Model name',
+    },
+    capabilities: {
+      description: 'Model capabilities',
+      $ref: '#/components/schemas/MediaGenerationModelCapabilities',
+    },
+  },
+} as const;
+
 export const EmbeddingModelConfigSchema = {
   type: 'object',
   description: 'Provider config for embeddings',
@@ -6182,6 +6287,9 @@ export const ProviderItemConfigSchema = {
     },
     {
       $ref: '#/components/schemas/RerankerModelConfig',
+    },
+    {
+      $ref: '#/components/schemas/MediaGenerationModelConfig',
     },
   ],
 } as const;
@@ -6610,6 +6718,10 @@ export const CanvasNodeTypeSchema = {
     'memo',
     'group',
     'image',
+    'video',
+    'audio',
+    'mediaSkill',
+    'mediaSkillResponse',
   ],
 } as const;
 
