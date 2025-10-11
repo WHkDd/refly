@@ -1222,6 +1222,11 @@ paths:
           schema:
             type: string
             example: r-g30e1b80b5g1itbemc0g5jj3
+        - name: genPublicUrl
+          in: query
+          description: Whether to generate public URL for the resource
+          schema:
+            type: boolean
       responses:
         '200':
           description: successful operation
@@ -4350,6 +4355,9 @@ components:
         downloadURL:
           type: string
           description: Download URL for this resource (for file type only)
+        publicURL:
+          type: string
+          description: Publicly accessible URL for this resource (file type only)
     Document:
       type: object
       required:

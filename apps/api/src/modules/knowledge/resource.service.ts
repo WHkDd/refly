@@ -116,7 +116,7 @@ export class ResourceService {
   }
 
   async getResourceDetail(user: User, param: GetResourceDetailData['query']) {
-    const { resourceId } = param;
+    const { resourceId, genPublicUrl } = param;
 
     if (!resourceId) {
       throw new ParamsError('Resource ID is required');
@@ -144,7 +144,13 @@ export class ResourceService {
       storageKey: resource.rawFileKey,
     });
 
-    return { ...resource, content, downloadURL };
+    const resourceDetail = { ...resource, content, downloadURL, publicURL: undefined };
+
+    if (genPublicUrl && resource.rawFileKey) {
+      resourceDetail.publicURL = await this.miscService.generateTempPublicURL(resource.rawFileKey);
+    }
+
+    return resourceDetail;
   }
 
   async prepareResource(user: User, param: UpsertResourceRequest): Promise<ResourcePrepareResult> {

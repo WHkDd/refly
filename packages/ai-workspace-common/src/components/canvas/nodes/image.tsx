@@ -30,8 +30,6 @@ import {
   useNodeExecutionStatus,
 } from '@refly-packages/ai-workspace-common/hooks/canvas';
 import { useNodePreviewControl } from '@refly-packages/ai-workspace-common/hooks/canvas/use-node-preview-control';
-import { useTranslation } from 'react-i18next';
-import { CanvasNodeType } from '@refly/openapi-schema';
 import { NodeExecutionOverlay } from './shared/node-execution-overlay';
 import { NodeExecutionStatus } from './shared/node-execution-status';
 
@@ -53,7 +51,6 @@ export const ImageNode = memo(
     const { readonly, canvasId } = useCanvasContext();
     const { setNodeStyle } = useNodeData();
     const { previewNode } = useNodePreviewControl({ canvasId });
-    const { t } = useTranslation();
 
     const handleMouseEnter = useCallback(() => {
       setIsHovered(true);
@@ -169,37 +166,6 @@ export const ImageNode = memo(
       }
     }, [imageUrl, data?.title, id]);
 
-    const handleCloneAskAI = useCallback(async () => {
-      const { contextItems, modelInfo } = data?.metadata || {};
-
-      // Create new skill node with context
-      const connectTo = contextItems?.map((item) => ({
-        type: item.type as CanvasNodeType,
-        entityId: item.entityId,
-      }));
-
-      // Create new skill node
-      addNode(
-        {
-          type: 'skill',
-          data: {
-            title: t('canvas.nodeActions.cloneAskAI'),
-            entityId: genSkillID(),
-            metadata: {
-              contextItems,
-              query: data.title,
-              modelInfo,
-            },
-          },
-        },
-        connectTo,
-        false,
-        true,
-      );
-
-      nodeActionEmitter.emit(createNodeEventName(id, 'cloneAskAI.completed'));
-    }, [id, data?.entityId, addNode, t]);
-
     const handleImageClick = useCallback(() => {
       // Create a node object for preview
       const nodeForPreview = {
@@ -236,14 +202,12 @@ export const ImageNode = memo(
         handleAskAI(event?.dragCreateInfo);
       };
       const handleNodeDownload = () => handleDownload();
-      const handleNodeCloneAskAI = () => handleCloneAskAI();
 
       // Register events with node ID
       nodeActionEmitter.on(createNodeEventName(id, 'addToContext'), handleNodeAddToContext);
       nodeActionEmitter.on(createNodeEventName(id, 'delete'), handleNodeDelete);
       nodeActionEmitter.on(createNodeEventName(id, 'askAI'), handleNodeAskAI);
       nodeActionEmitter.on(createNodeEventName(id, 'download'), handleNodeDownload);
-      nodeActionEmitter.on(createNodeEventName(id, 'cloneAskAI'), handleNodeCloneAskAI);
 
       return () => {
         // Cleanup events when component unmounts
@@ -251,12 +215,11 @@ export const ImageNode = memo(
         nodeActionEmitter.off(createNodeEventName(id, 'delete'), handleNodeDelete);
         nodeActionEmitter.off(createNodeEventName(id, 'askAI'), handleNodeAskAI);
         nodeActionEmitter.off(createNodeEventName(id, 'download'), handleNodeDownload);
-        nodeActionEmitter.off(createNodeEventName(id, 'cloneAskAI'), handleNodeCloneAskAI);
 
         // Clean up all node events
         cleanupNodeEvents(id);
       };
-    }, [id, handleAddToContext, handleDelete, handleAskAI, handleDownload, handleCloneAskAI]);
+    }, [id, handleAddToContext, handleDelete, handleAskAI, handleDownload]);
 
     const moveableRef = useRef<Moveable>(null);
 

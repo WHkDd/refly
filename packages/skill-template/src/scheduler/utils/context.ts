@@ -297,20 +297,19 @@ export async function prepareContext(
 
   // Process knowledge base resources
   if (context?.resources?.length > 0) {
-    const items = (context?.resources ?? [])
-      .filter((item) => item?.resource?.content)
-      .map((item) => {
-        const resource = item?.resource;
-        const resourceId = resource?.resourceId ?? 'unknown';
-        const title = resource?.title ?? 'Untitled Resource';
-        const body = resource?.content ?? '';
-        const resourceType = resource?.resourceType ?? 'unknown';
+    const items = (context?.resources ?? []).map((item) => {
+      const resource = item?.resource;
+      const resourceId = resource?.resourceId ?? 'unknown';
+      const title = resource?.title ?? 'Untitled Resource';
+      const body = resource?.content ?? '';
+      const resourceType = resource?.resourceType ?? 'unknown';
+      const publicUrl = resource?.publicURL;
 
-        const prefix = `### ${title}\n\n**Resource ID:** ${resourceId}\n**Type:** ${resourceType}\n\n`;
-        const suffix = '';
+      const prefix = `### ${title}\n\n**Resource ID:** ${resourceId}\n**Type:** ${resourceType}${publicUrl ? `\n**Public URL:** ${publicUrl}` : ''}\n\n`;
+      const suffix = '';
 
-        return { section: 'Knowledge Base Resources', prefix, body, suffix } as Block;
-      });
+      return { section: 'Knowledge Base Resources', prefix, body, suffix } as Block;
+    });
 
     pushSection('Knowledge Base Resources', items);
   }

@@ -665,7 +665,8 @@ export const SkillResponseNode = memo(
     );
 
     const handleCloneAskAI = useCallback(async () => {
-      const { contextItems, modelInfo, selectedSkill, tplConfig } = data?.metadata || {};
+      const { contextItems, modelInfo, selectedSkill, tplConfig, structuredData } =
+        data?.metadata || {};
       const currentSkill = actionMeta || selectedSkill;
 
       // Create new skill node with context, similar to group node implementation
@@ -683,7 +684,7 @@ export const SkillResponseNode = memo(
             entityId: genSkillID(),
             metadata: {
               contextItems,
-              query: title,
+              query: structuredData?.query || title,
               modelInfo,
               selectedSkill: currentSkill,
               tplConfig,

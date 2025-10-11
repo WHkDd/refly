@@ -1143,6 +1143,10 @@ export const ResourceSchema = {
       type: 'string',
       description: 'Download URL for this resource (for file type only)',
     },
+    publicURL: {
+      type: 'string',
+      description: 'Publicly accessible URL for this resource (file type only)',
+    },
   },
 } as const;
 

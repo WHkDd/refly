@@ -27,8 +27,6 @@ import { NodeProps } from '@xyflow/react';
 import { CanvasNodeData } from '@refly/canvas-common';
 import { useNodePreviewControl } from '@refly-packages/ai-workspace-common/hooks/canvas/use-node-preview-control';
 import { ModelInfo } from '@refly/openapi-schema';
-import { CanvasNodeType } from '@refly/openapi-schema';
-import { useTranslation } from 'react-i18next';
 import { useNodeExecutionStatus } from '@refly-packages/ai-workspace-common/hooks/canvas';
 import { NodeExecutionOverlay } from './shared/node-execution-overlay';
 import { NodeExecutionStatus } from './shared/node-execution-status';
@@ -85,7 +83,6 @@ export const AudioNode = memo(
     const { getConnectionInfo } = useGetNodeConnectFromDragCreateInfo();
     const { readonly, canvasId } = useCanvasContext();
     const { previewNode } = useNodePreviewControl({ canvasId });
-    const { t } = useTranslation();
 
     // Get node execution status
     const { status: executionStatus } = useNodeExecutionStatus({
@@ -155,37 +152,6 @@ export const AudioNode = memo(
       [data, addNode, getConnectionInfo],
     );
 
-    const handleCloneAskAI = useCallback(async () => {
-      const { contextItems, modelInfo } = data?.metadata || {};
-
-      // Create new skill node with context
-      const connectTo = contextItems?.map((item) => ({
-        type: item.type as CanvasNodeType,
-        entityId: item.entityId,
-      }));
-
-      // Create new skill node
-      addNode(
-        {
-          type: 'skill',
-          data: {
-            title: t('canvas.nodeActions.cloneAskAI'),
-            entityId: genSkillID(),
-            metadata: {
-              contextItems,
-              query: data.title,
-              modelInfo,
-            },
-          },
-        },
-        connectTo,
-        false,
-        true,
-      );
-
-      nodeActionEmitter.emit(createNodeEventName(id, 'cloneAskAI.completed'));
-    }, [id, data?.entityId, addNode, t]);
-
     const onTitleChange = (newTitle: string) => {
       setNodeDataByEntity(
         {
@@ -244,25 +210,22 @@ export const AudioNode = memo(
       const handleNodeAskAI = (event?: { dragCreateInfo?: NodeDragCreateInfo }) => {
         handleAskAI(event?.dragCreateInfo);
       };
-      const handleNodeCloneAskAI = () => handleCloneAskAI();
 
       // Register events with node ID
       nodeActionEmitter.on(createNodeEventName(id, 'addToContext'), handleNodeAddToContext);
       nodeActionEmitter.on(createNodeEventName(id, 'delete'), handleNodeDelete);
       nodeActionEmitter.on(createNodeEventName(id, 'askAI'), handleNodeAskAI);
-      nodeActionEmitter.on(createNodeEventName(id, 'cloneAskAI'), handleNodeCloneAskAI);
 
       return () => {
         // Cleanup events when component unmounts
         nodeActionEmitter.off(createNodeEventName(id, 'addToContext'), handleNodeAddToContext);
         nodeActionEmitter.off(createNodeEventName(id, 'delete'), handleNodeDelete);
         nodeActionEmitter.off(createNodeEventName(id, 'askAI'), handleNodeAskAI);
-        nodeActionEmitter.off(createNodeEventName(id, 'cloneAskAI'), handleNodeCloneAskAI);
 
         // Clean up all node events
         cleanupNodeEvents(id);
       };
-    }, [id, handleAddToContext, handleDelete, handleAskAI, handleCloneAskAI]);
+    }, [id, handleAddToContext, handleDelete, handleAskAI]);
 
     if (!data) {
       return null;

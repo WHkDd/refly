@@ -33,6 +33,7 @@ export type DocumentDetail = DocumentModel & {
 export type ResourceDetail = ResourceModel & {
   content?: string;
   downloadURL?: string;
+  publicURL?: string;
 };
 
 export type FinalizeResourceParam = {
@@ -65,6 +66,7 @@ export const resourcePO2DTO = (resource: ResourceDetail): Resource => {
       'canvasId',
       'rawFileKey',
       'downloadURL',
+      'publicURL',
       'storageKey',
     ]),
     resourceType: resource.resourceType as ResourceType,

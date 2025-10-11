@@ -281,34 +281,12 @@ export const NodeActionButtons: FC<NodeActionButtonsProps> = memo(
             onClick: handleDownload,
             loading: downloadRunning,
           });
-
-          buttons.push({
-            key: 'cloneAskAI',
-            icon: Clone,
-            tooltip: t('canvas.nodeActions.cloneAskAI'),
-            onClick: handleCloneAskAI,
-            loading: cloneAskAIRunning,
-          });
           break;
 
         case 'audio':
-          buttons.push({
-            key: 'cloneAskAI',
-            icon: Clone,
-            tooltip: t('canvas.nodeActions.cloneAskAI'),
-            onClick: handleCloneAskAI,
-            loading: cloneAskAIRunning,
-          });
           break;
 
         case 'video':
-          buttons.push({
-            key: 'cloneAskAI',
-            icon: Clone,
-            tooltip: t('canvas.nodeActions.cloneAskAI'),
-            onClick: handleCloneAskAI,
-            loading: cloneAskAIRunning,
-          });
           break;
       }
 

@@ -788,6 +788,10 @@ export type Resource = {
    * Download URL for this resource (for file type only)
    */
   downloadURL?: string;
+  /**
+   * Publicly accessible URL for this resource (file type only)
+   */
+  publicURL?: string;
 };
 
 export type Document = {
@@ -6732,6 +6736,10 @@ export type ListResourcesError = unknown;
 
 export type GetResourceDetailData = {
   query: {
+    /**
+     * Whether to generate public URL for the resource
+     */
+    genPublicUrl?: boolean;
     /**
      * Resource ID to retrieve
      */

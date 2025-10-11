@@ -821,7 +821,9 @@ export class SkillService implements OnModuleInit {
       const limit = pLimit(5);
       const resources = await Promise.all(
         resourceIds.map((id) =>
-          limit(() => this.resourceService.getResourceDetail(user, { resourceId: id })),
+          limit(() =>
+            this.resourceService.getResourceDetail(user, { resourceId: id, genPublicUrl: true }),
+          ),
         ),
       );
       const resourceMap = new Map<string, Resource>();
