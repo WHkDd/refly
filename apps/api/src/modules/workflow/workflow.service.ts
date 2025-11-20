@@ -230,12 +230,14 @@ export class WorkflowService {
       canvasId,
       entityId,
       nodeData,
+      connectTo,
       processedQuery,
       originalQuery,
       resultHistory,
     } = nodeExecution;
     const node = safeParseJSON(nodeData) as CanvasNode;
     const metadata = node.data?.metadata as ResponseNodeMeta;
+    const connectToFilters: CanvasNodeFilter[] = safeParseJSON(connectTo) ?? [];
 
     if (!metadata) {
       this.logger.warn(
@@ -244,8 +246,13 @@ export class WorkflowService {
       return;
     }
 
-    const { modelInfo, selectedToolsets, contextItems = [], upstreamResultIds } = metadata;
-    const context = convertContextItemsToInvokeParams(contextItems, upstreamResultIds ?? []);
+    const { modelInfo, selectedToolsets, contextItems = [] } = metadata;
+    const context = convertContextItemsToInvokeParams(
+      contextItems,
+      connectToFilters
+        .filter((filter) => filter.type === 'skillResponse')
+        .map((filter) => filter.entityId),
+    );
 
     // Prepare the invoke skill request
     const invokeRequest: InvokeSkillRequest = {

@@ -15,9 +15,9 @@ import { QUEUE_SYNC_TOOL_CREDIT_USAGE } from '../../../../utils/const';
 import { PrismaService } from '../../../common/prisma.service';
 import { SyncToolCreditUsageJobData } from '../../../credit/credit.dto';
 import { MiscService } from '../../../misc/misc.service';
-import { MEDIA_TYPES } from '../../common/constant/media-types';
 import { ToolExecutionSync } from '../../common/decorators/tool-execution-sync.decorator';
 import { ToolExecutionSyncInterceptor } from '../../common/interceptors/tool-execution-sync.interceptor';
+import { MEDIA_TYPES } from '../../constant';
 
 /**
  * HeyGen Video Generation Service

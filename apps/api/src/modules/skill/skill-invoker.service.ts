@@ -25,11 +25,12 @@ import {
   SkillRunnableMeta,
   createSkillInventory,
 } from '@refly/skill-template';
-import { getWholeParsedContent, safeParseJSON } from '@refly/utils';
+import { genImageID, getWholeParsedContent, safeParseJSON } from '@refly/utils';
 import { Queue } from 'bullmq';
 import { Response } from 'express';
 import { EventEmitter } from 'node:events';
 import * as Y from 'yjs';
+import { ToolCallResult } from '../../generated/client';
 import {
   QUEUE_AUTO_NAME_CANVAS,
   QUEUE_SYNC_PILOT_STEP,
@@ -55,10 +56,8 @@ import { SyncRequestUsageJobData, SyncTokenUsageJobData } from '../subscription/
 import { ToolCallService, ToolCallStatus } from '../tool-call/tool-call.service';
 import { ToolService } from '../tool/tool.service';
 import { InvokeSkillJobData } from './skill.dto';
-import { ToolCallResult } from '../../generated/client';
 import { DriveService } from '../drive/drive.service';
 import { CanvasSyncService } from '../canvas-sync/canvas-sync.service';
-import { genImageID } from '@refly/utils';
 
 @Injectable()
 export class SkillInvokerService {
@@ -312,6 +311,21 @@ export class SkillInvokerService {
       // In desktop mode, we could handle usage tracking differently if needed
     }
 
+    // Archive files from previous execution of this result
+    const canvasId = data.target?.entityType === 'canvas' ? data.target?.entityId : undefined;
+    if (canvasId) {
+      this.logger.log(
+        `[Archive] Starting archive for resultId: ${resultId}, canvasId: ${canvasId}, uid: ${user.uid}`,
+      );
+      await this.driveService.archiveFiles(user, canvasId, {
+        resultId,
+        source: 'agent',
+      });
+      this.logger.log(`[Archive] Completed archive for resultId: ${resultId}`);
+    } else {
+      this.logger.log(`[Archive] Skipping archive - no canvasId found for resultId: ${resultId}`);
+    }
+
     // Create abort controller for this action
     const abortController = new AbortController();
 
@@ -552,8 +566,8 @@ export class SkillInvokerService {
 
       // tool callId, now we use first time returned run_id as tool call id
       const startTs = Date.now();
-
       const toolCallIds: Set<string> = new Set();
+
       for await (const event of skill.streamEvents(input, {
         ...config,
         version: 'v2',

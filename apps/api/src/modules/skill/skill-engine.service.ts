@@ -25,7 +25,9 @@ import { MiscService } from '../misc/misc.service';
 import { genImageID } from '@refly/utils';
 import { FishAudioService } from '../tool/media/audio/fish-audio.service';
 import { HeyGenService } from '../tool/media/video/heygen.service';
+import { ScaleboxService } from '../tool/sandbox/scalebox.service';
 import { DriveService } from '../drive/drive.service';
+import { ToolService } from '../tool/tool.service';
 
 @Injectable()
 export class SkillEngineService implements OnModuleInit {
@@ -48,6 +50,8 @@ export class SkillEngineService implements OnModuleInit {
   private canvasSyncService: CanvasSyncService;
   private fishAudioService: FishAudioService;
   private heygenService: HeyGenService;
+  private toolService: ToolService;
+  private scaleboxService: ScaleboxService;
   constructor(
     private moduleRef: ModuleRef,
     private config: ConfigService,
@@ -70,6 +74,8 @@ export class SkillEngineService implements OnModuleInit {
     this.canvasSyncService = this.moduleRef.get(CanvasSyncService, { strict: false });
     this.fishAudioService = this.moduleRef.get(FishAudioService, { strict: false });
     this.heygenService = this.moduleRef.get(HeyGenService, { strict: false });
+    this.toolService = this.moduleRef.get(ToolService, { strict: false });
+    this.scaleboxService = this.moduleRef.get(ScaleboxService, { strict: false });
   }
 
   /**
@@ -91,11 +97,28 @@ export class SkillEngineService implements OnModuleInit {
       },
       createCanvas: async (user, req) => {
         const canvas = await this.canvasService.createCanvas(user, req);
-        return buildSuccessResponse(canvasPO2DTO(canvas));
+        const canvasDTO = canvasPO2DTO(canvas);
+        if (canvasDTO.usedToolsets && canvasDTO.usedToolsets.length > 0) {
+          canvasDTO.usedToolsets = await this.toolService.populateToolsetsWithDefinition(
+            canvasDTO.usedToolsets,
+          );
+        }
+        return buildSuccessResponse(canvasDTO);
       },
       listCanvases: async (user, param) => {
         const canvasList = await this.canvasService.listCanvases(user, param);
-        return buildSuccessResponse(canvasList.map((canvas) => canvasPO2DTO(canvas)));
+        const canvasDTOs = canvasList.map((canvas) => canvasPO2DTO(canvas));
+        const populatedCanvases = await Promise.all(
+          canvasDTOs.map(async (canvasDTO) => {
+            if (canvasDTO.usedToolsets && canvasDTO.usedToolsets.length > 0) {
+              canvasDTO.usedToolsets = await this.toolService.populateToolsetsWithDefinition(
+                canvasDTO.usedToolsets,
+              );
+            }
+            return canvasDTO;
+          }),
+        );
+        return buildSuccessResponse(populatedCanvases);
       },
       deleteCanvas: async (user, param) => {
         await this.canvasService.deleteCanvas(user, param);
@@ -235,6 +258,9 @@ export class SkillEngineService implements OnModuleInit {
       },
       generateVideo: async (user, req) => {
         return await this.heygenService.generateVideo(user, req);
+      },
+      execute: async (user, req) => {
+        return await this.scaleboxService.execute(user, req);
       },
     };
   };

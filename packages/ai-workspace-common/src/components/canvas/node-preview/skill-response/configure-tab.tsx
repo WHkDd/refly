@@ -9,6 +9,7 @@ import { ModelSelector } from '@refly-packages/ai-workspace-common/components/ca
 import { ConfigInfoDisplay } from './config-info-display';
 import { useUploadImage } from '@refly-packages/ai-workspace-common/hooks/use-upload-image';
 import { useAgentNodeManagement } from '@refly-packages/ai-workspace-common/hooks/canvas/use-agent-node-management';
+import { useAgentConnections } from '@refly-packages/ai-workspace-common/hooks/canvas/use-agent-connections';
 
 interface ConfigureTabProps {
   query?: string | null;
@@ -38,12 +39,20 @@ const ConfigureTabComponent = ({
     modelInfo,
     contextItems,
     selectedToolsets,
-    upstreamResultIds,
     setModelInfo,
     setContextItems,
     setSelectedToolsets,
-    setUpstreamResultIds,
   } = useAgentNodeManagement(nodeId);
+
+  const { getUpstreamAgentNodes, disconnectFromUpstreamAgent } = useAgentConnections();
+  const upstreamAgentNodes = getUpstreamAgentNodes(nodeId);
+
+  const removeUpstreamAgent = useCallback(
+    (targetEntityId: string) => {
+      disconnectFromUpstreamAgent(nodeId, targetEntityId);
+    },
+    [disconnectFromUpstreamAgent, nodeId],
+  );
 
   const handleDrop = useCallback(
     async (event: React.DragEvent<HTMLDivElement>) => {
@@ -186,8 +195,8 @@ const ConfigureTabComponent = ({
               contextItems={contextItems}
               setContextItems={setContextItems}
               setSelectedToolsets={setSelectedToolsets}
-              upstreamResultIds={upstreamResultIds}
-              setUpstreamResultIds={setUpstreamResultIds}
+              upstreamAgentNodes={upstreamAgentNodes}
+              removeUpstreamAgent={removeUpstreamAgent}
             />
           </div>
         </div>

@@ -129,7 +129,6 @@ const SkillResponseNodePreviewComponent = ({
   const contextItems =
     data?.metadata?.contextItems ?? convertResultContextToItems(result?.context, result?.history);
   const selectedToolsets = data?.metadata?.selectedToolsets ?? result?.toolsets;
-  const upstreamResultIds = data?.metadata?.upstreamResultIds;
 
   const { steps = [] } = result ?? {};
 
@@ -175,12 +174,12 @@ const SkillResponseNodePreviewComponent = ({
 
     invokeAction(
       {
+        nodeId: node.id,
         resultId,
         query: llmInputQuery,
         modelInfo,
         contextItems,
         selectedToolsets,
-        upstreamResultIds,
         version: nextVersion,
       },
       {
@@ -194,7 +193,6 @@ const SkillResponseNodePreviewComponent = ({
     modelInfo,
     contextItems,
     selectedToolsets,
-    upstreamResultIds,
     canvasId,
     invokeAction,
     resetFailedState,

@@ -51,6 +51,7 @@ export default () => ({
         accessKey: process.env.MINIO_INTERNAL_ACCESS_KEY || 'minioadmin',
         secretKey: process.env.MINIO_INTERNAL_SECRET_KEY || 'minioadmin',
         bucket: process.env.MINIO_INTERNAL_BUCKET || 'refly-weblink',
+        region: process.env.MINIO_INTERNAL_REGION || 'us-east-1',
       },
       external: {
         endPoint: process.env.MINIO_EXTERNAL_ENDPOINT || 'localhost',
@@ -59,6 +60,7 @@ export default () => ({
         accessKey: process.env.MINIO_EXTERNAL_ACCESS_KEY || 'minioadmin',
         secretKey: process.env.MINIO_EXTERNAL_SECRET_KEY || 'minioadmin',
         bucket: process.env.MINIO_EXTERNAL_BUCKET || 'refly-weblink',
+        region: process.env.MINIO_EXTERNAL_REGION || 'us-east-1',
       },
     },
   },
@@ -132,6 +134,20 @@ export default () => ({
       clientSecret: process.env.NOTION_CLIENT_SECRET || 'test',
       callbackUrl: process.env.NOTION_CALLBACK_URL || 'test',
       authorizationURL: process.env.NOTION_AUTHORIZATION_URL || 'test',
+    },
+    invitation: {
+      requireInvitationCode: process.env.AUTH_REQUIRE_INVITATION_CODE === 'true' || false,
+      inviterCreditAmount: Number.parseInt(process.env.INVITATION_INVITER_CREDIT_AMOUNT) || 500,
+      inviteeCreditAmount: Number.parseInt(process.env.INVITATION_INVITEE_CREDIT_AMOUNT) || 500,
+      inviterCreditExpiresInMonths:
+        Number.parseInt(process.env.INVITATION_INVITER_CREDIT_EXPIRES_IN_MONTHS) || 3,
+      inviteeCreditExpiresInMonths:
+        Number.parseInt(process.env.INVITATION_INVITEE_CREDIT_EXPIRES_IN_MONTHS) || 3,
+    },
+    registration: {
+      bonusCreditAmount: Number.parseInt(process.env.REGISTRATION_BONUS_CREDIT_AMOUNT) || 3000,
+      bonusCreditExpiresInMonths:
+        Number.parseInt(process.env.REGISTRATION_BONUS_CREDIT_EXPIRES_IN_MONTHS) || 3,
     },
   },
   tools: {
@@ -218,6 +234,17 @@ export default () => ({
   video: {
     heygen: {
       apiKey: process.env.HEYGEN_API_KEY,
+    },
+  },
+
+  sandbox: {
+    scalebox: {
+      apiKey: process.env.SCALEBOX_API_KEY,
+      timeout: process.env.SCALEBOX_TIMEOUT,
+      maxQueueSize: process.env.SCALEBOX_MAX_QUEUE_SIZE,
+      maxSandboxes: process.env.SCALEBOX_MAX_SANDBOXES,
+      minRemainingMs: process.env.SCALEBOX_MIN_REMAINING_MS,
+      extendTimeoutMs: process.env.SCALEBOX_EXTEND_TIMEOUT_MS,
     },
   },
 });

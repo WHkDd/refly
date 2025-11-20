@@ -19,7 +19,6 @@ import { QUEUE_SYNC_TOOL_CREDIT_USAGE } from '../../../../utils/const';
 import { PrismaService } from '../../../common/prisma.service';
 import { SyncToolCreditUsageJobData } from '../../../credit/credit.dto';
 import { MiscService } from '../../../misc/misc.service';
-import { MEDIA_TYPES } from '../../common/constant/media-types';
 import { ToolExecutionSync } from '../../common/decorators/tool-execution-sync.decorator';
 import {
   type ToolExecutionResult,
@@ -27,6 +26,7 @@ import {
 } from '../../common/interceptors/tool-execution-sync.interceptor';
 import type { FishAudioClient, ReferenceAudio, STTRequest, TTSRequest } from './fish-audio.cjs';
 import { loadFishAudio } from './fish-audio.cjs';
+import { MEDIA_TYPES } from '../../constant';
 
 /**
  * Fish Audio Service
@@ -398,6 +398,10 @@ export class FishAudioService implements OnModuleInit {
         const audioStream = await this.fishAudioClient.textToSpeech.convert(sdkRequest);
         const audioBuffer = await this.streamToBuffer(audioStream);
 
+        this.logger.log(
+          `[DEBUG] Generated audio buffer from Fish Audio: size=${audioBuffer.length} bytes, first 16 bytes: ${audioBuffer.slice(0, 16).toString('hex')}`,
+        );
+
         // Determine file extension and metadata
         const format = request.format || 'mp3';
         const extension = format === 'pcm' ? 'raw' : format;
@@ -409,7 +413,9 @@ export class FishAudioService implements OnModuleInit {
           // Write buffer to temporary file for audio duration calculation
           tempFilePath = path.join(os.tmpdir(), `audio-${Date.now()}.${extension}`);
           await fs.writeFile(tempFilePath, audioBuffer);
+          this.logger.log(`[DEBUG] Saved temp file for duration calculation: ${tempFilePath}`);
           duration = Math.round(await getAudioDurationInSeconds(tempFilePath));
+          this.logger.log(`[DEBUG] Audio duration: ${duration} seconds`);
         } catch (error) {
           // Fallback: estimate based on buffer size (only for PCM format)
           if (format === 'pcm') {
@@ -432,6 +438,10 @@ export class FishAudioService implements OnModuleInit {
 
         // Charge credits after successful audio generation
         await this.chargeTTSCredits(user, duration, `tts-${Date.now()}`);
+
+        this.logger.log(
+          `[DEBUG] Returning audio buffer: size=${audioBuffer.length}, filename=audio.${extension}, mimetype=audio/${format === 'pcm' ? 'raw' : format}, duration=${duration}`,
+        );
 
         // Return ToolExecutionResult format with buffer
         // The interceptor will handle upload and generate entityId/entityType
