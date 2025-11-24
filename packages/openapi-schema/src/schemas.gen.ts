@@ -10841,6 +10841,15 @@ export const ResponseSchemaSchema = {
     {
       type: 'object',
       description: 'Response schema definition for identifying resource fields',
+      properties: {
+        omitFields: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+          description: "Field names to omit from the response (e.g., ['thoughtSignature'])",
+        },
+      },
     },
   ],
 } as const;

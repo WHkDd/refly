@@ -13,8 +13,6 @@ import {
 } from './builtin';
 import { AgentBaseToolset } from './base';
 import { BrowserUseToolset, BrowserUseToolsetDefinition } from './browser-use';
-import { CalculatorToolset, CalculatorToolsetDefinition } from './calculator';
-import { CodeInterpreterToolset, CodeInterpreterToolsetDefinition } from './code-interpreter';
 import { FalAudioToolset, FalAudioToolsetDefinition } from './fal-audio';
 import { FalImageToolset, FalImageToolsetDefinition } from './fal-image';
 import { FalVideoToolset, FalVideoToolsetDefinition } from './fal-video';
@@ -89,10 +87,7 @@ export const toolsetInventory: Record<
     class: Apify13FToolset,
     definition: Apify13FToolsetDefinition,
   },
-  [CalculatorToolsetDefinition.key]: {
-    class: CalculatorToolset,
-    definition: CalculatorToolsetDefinition,
-  },
+
   [GoogleDriveToolsetDefinition.key]: {
     class: undefined,
     definition: GoogleDriveToolsetDefinition,
@@ -100,10 +95,6 @@ export const toolsetInventory: Record<
   [JinaToolsetDefinition.key]: {
     class: JinaToolset,
     definition: JinaToolsetDefinition,
-  },
-  [CodeInterpreterToolsetDefinition.key]: {
-    class: CodeInterpreterToolset,
-    definition: CodeInterpreterToolsetDefinition,
   },
   [WhaleWisdomToolsetDefinition.key]: {
     class: WhaleWisdomToolset,

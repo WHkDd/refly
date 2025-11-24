@@ -4,6 +4,7 @@ import { Tooltip } from 'antd';
 import { nodeOperationsEmitter } from '@refly-packages/ai-workspace-common/events/nodeOperations';
 import { CanvasNodeType } from '@refly/openapi-schema';
 import { useTranslation } from 'react-i18next';
+import { useCanvasContext } from '@refly-packages/ai-workspace-common/context/canvas';
 
 interface CustomHandleProps {
   id: string;
@@ -19,6 +20,7 @@ export const CustomHandle = React.memo(
   ({ id, type, position, isNodeHovered, nodeType, nodeId }: CustomHandleProps) => {
     const { t } = useTranslation();
     const isTarget = type === 'target';
+    const { readonly } = useCanvasContext();
 
     const handlePlusClick = useCallback(
       (e: React.MouseEvent) => {
@@ -83,7 +85,7 @@ export const CustomHandle = React.memo(
         pointer-events-none
       `}
       >
-        {shouldShowPlusIcon ? (
+        {shouldShowPlusIcon && !readonly ? (
           <div className="pointer-events-auto">
             <Tooltip
               title={

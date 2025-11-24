@@ -7716,7 +7716,10 @@ export type JsonSchema = {
 export type type6 = 'object';
 
 export type ResponseSchema = JsonSchema & {
-  [key: string]: unknown;
+  /**
+   * Field names to omit from the response (e.g., ['thoughtSignature'])
+   */
+  omitFields?: Array<string>;
 };
 
 export type ResourceField = {
